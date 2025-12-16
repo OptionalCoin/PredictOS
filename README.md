@@ -1,16 +1,14 @@
-<div align="center">
+<p align="center">
+  <img src="terminal/public/predict-os-banner.png" alt="PredictOS Banner" width="100%">
+</p>
 
-  <img src="terminal/public/logo.jpg" alt="PredictOS Logo" width="180" height="180" style="border-radius: 50%;" />
+<h1 align="center">PredictOS</h1>
 
-  <h1>PredictOS</h1>
+<p align="center"><strong>The All-In-One Prediction Market Framework</strong></p>
 
-  <p><strong>The All-In-One Prediction Market Framework</strong></p>
+<p align="center">Build, analyze, and trade on prediction markets with AI-powered insights, automated strategies, and unified market access.</p>
 
-  <p>Build, analyze, and trade on prediction markets with AI-powered insights, automated strategies, and unified market access.</p>
-
-  <p><em>Built by <a href="https://predictionxbt.fun">PredictionXBT</a>, the team behind <strong>Predict</strong> — the Layer 1 Social Prediction Market</em></p>
-
-</div>
+<p align="center"><em>Built by <a href="https://predictionxbt.fun">PredictionXBT</a>, the team behind <strong>Predict</strong> — The Layer 1 for Social Prediction Market</em></p>
 
 <div align="center">
 
