@@ -261,6 +261,18 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 
 ---
 
+## 📈 Star History
+
+<a href="https://star-history.com/#PredictionXBT/PredictOS">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=PredictionXBT/PredictOS&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=PredictionXBT/PredictOS&type=Date" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=PredictionXBT/PredictOS&type=Date" width="100%" />
+  </picture>
+</a>
+
+---
+
 <div align="center">
   <p>Built with ❤️ by the PredictionXBT team</p>
   <p><sub>Powered by <a href="https://domeapi.io/">Dome</a></sub></p>
