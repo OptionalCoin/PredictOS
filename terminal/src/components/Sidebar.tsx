@@ -26,8 +26,8 @@ interface SidebarProps {
 
 const navItems = [
   { id: "analysis", label: "Market Analysis", icon: BarChart3, available: true, href: "/market-analysis", version: "v0.1" },
+  { id: "betting-bots", label: "Betting Bots", icon: Bot, available: true, href: "/betting-bots", version: "v0.1" },
   { id: "agent-battles", label: "Agent Battles (x402)", icon: Swords, available: false },
-  { id: "betting-bots", label: "Betting Bots", icon: Bot, available: false },
   { id: "no-code-builder", label: "No Code Builder", icon: Wand2, available: false },
   { id: "whale-tracking", label: "Whale Tracking", icon: Fish, available: false },
   { id: "copytrading", label: "Copytrading", icon: Copy, available: false },
