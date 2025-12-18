@@ -233,25 +233,34 @@ Your PredictOS terminal will be running at [http://localhost:3000](http://localh
 
 ## 🤝 Partners
 
-<div align="center">
-  <table>
-    <tr>
-      <td align="center" width="300">
-        <a href="https://domeapi.io/">
-          <img src="terminal/public/dome-icon-light.svg" alt="Dome API" width="80" height="80" />
-          <br />
-          <strong>Dome API</strong>
-        </a>
-        <br />
-        <sub>The unified API for prediction markets</sub>
-        <br /><br />
-        <a href="https://domeapi.io/">🌐 Website</a> · <a href="https://x.com/getdomeapi">𝕏 Twitter</a>
-      </td>
-    </tr>
-  </table>
-</div>
-
-PredictOS is proudly powered by [Dome](https://domeapi.io/) — the unified API that provides seamless access to Kalshi, Polymarket, and other prediction market platforms through a single, elegant interface. Dome handles the complexity of multi-platform data aggregation so we can focus on building the best trading tools.
+<table>
+  <tr>
+    <td width="120" align="center">
+      <a href="https://domeapi.io/">
+        <img src="terminal/public/dome-icon-light.svg" alt="Dome API" width="80" height="80" />
+      </a>
+    </td>
+    <td>
+      <h3><a href="https://domeapi.io/">Dome API</a></h3>
+      <p><strong>The unified API for prediction markets.</strong> Dome provides seamless access to Kalshi, Polymarket, and other prediction market platforms through a single, elegant interface.</p>
+      <p>🔗 PredictOS is proudly powered by Dome — they handle the complexity of multi-platform data aggregation so we can focus on building the best trading tools.</p>
+      <p><a href="https://domeapi.io/">🌐 Website</a> · <a href="https://x.com/getdomeapi">𝕏 Twitter</a></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="120" align="center">
+      <a href="https://tryokbet.com/">
+        <img src="terminal/public/okbet.svg" alt="OKBet" width="80" height="80" />
+      </a>
+    </td>
+    <td>
+      <h3><a href="https://tryokbet.com/">OKBet</a></h3>
+      <p><strong>The FIRST all-in-one prediction markets bot.</strong> Available on Telegram and soon on web, OKBet makes it easy to trade prediction markets from anywhere.</p>
+      <p>🔗 Our <a href="https://x.com/predict_agent">Predict_Agent</a> provides direct OKBet links to place bets on Kalshi and Polymarket in Telegram.</p>
+      <p><a href="https://t.me/okdotbet_bot">🤖 Telegram</a> · <a href="https://tryokbet.com/">🌐 Website</a> · <a href="https://docs.tryokbet.com/">📖 Docs</a> · <a href="https://x.com/tryokbet">𝕏 Twitter</a></p>
+    </td>
+  </tr>
+</table>
 
 ## 💪 Contributing
 
