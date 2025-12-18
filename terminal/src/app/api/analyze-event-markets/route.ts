@@ -49,7 +49,8 @@ export async function POST(request: NextRequest) {
     const pmType = body.pmType || (body.url.includes("kalshi.com") ? "Kalshi" : "Polymarket");
 
     // Call the Supabase Edge Function
-    const edgeFunctionUrl = `${supabaseUrl}/functions/v1/analyze-event-markets`;
+    const edgeFunctionUrl = process.env.SUPABASE_EDGE_FUNCTION_ANALYZE_EVENT_MARKETS 
+      || `${supabaseUrl}/functions/v1/analyze-event-markets`;
     
     const response = await fetch(edgeFunctionUrl, {
       method: "POST",
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error("Error in analyze API route:", error);
+    console.error("Error in analyze-event-markets API route:", error);
     return NextResponse.json(
       {
         success: false,

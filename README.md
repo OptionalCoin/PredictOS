@@ -11,7 +11,7 @@
 <div align="center">
 
   <a href="https://github.com/PredictionXBT/PredictOS/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License"></a>
-  <a href="https://github.com/PredictionXBT/PredictOS"><img src="https://img.shields.io/badge/version-0.1.0-blue?style=for-the-badge" alt="Version"></a>
+  <a href="https://github.com/PredictionXBT/PredictOS"><img src="https://img.shields.io/badge/version-1.0.1-blue?style=for-the-badge" alt="Version"></a>
   <a href="https://predictionxbt.fun"><img src="https://img.shields.io/badge/Website-predictionxbt.fun-purple?style=for-the-badge" alt="Website"></a>
   <a href="https://x.com/prediction_xbt"><img src="https://img.shields.io/badge/Twitter-@prediction__xbt-black?style=for-the-badge&logo=x" alt="Twitter"></a>
 
@@ -47,8 +47,6 @@ Whether you're a casual trader looking for quick market analysis or a power user
 
 <div align="center">
   <a href="https://domeapi.io/"><img src="https://img.shields.io/badge/Powered%20by-Dome%20API-00D4AA?style=for-the-badge" alt="Dome API" /></a>
-  <a href="https://x.ai/"><img src="https://img.shields.io/badge/AI-xAI%20Grok-orange?style=for-the-badge" alt="xAI Grok" /></a>
-  <a href="https://openai.com/"><img src="https://img.shields.io/badge/AI-OpenAI%20GPT-10a37f?style=for-the-badge" alt="OpenAI GPT" /></a>
 </div>
 
 ## 💎 The $PREDICT Token
@@ -71,18 +69,18 @@ A key feature driving adoption is the ability to **stake $PREDICT for attractive
 
 > 💡 **$PREDICT is more than a token** — it's the core fuel powering adoption, liquidity, and innovation in the live PredictOS framework, establishing it as a leader in decentralized social prediction markets.
 
-## 🎯 Current Features (v0.1)
+## 🎯 Current Features (v1.0.1)
 
-| Feature | Status | Description |
-|---------|--------|-------------|
-| **AI Market Analysis** | ✅ Released | Paste a Kalshi or Polymarket URL and get instant AI-powered analysis with probability estimates, confidence scores, and trading recommendations |
+| Feature | Status | Description | Setup Guide |
+|---------|--------|-------------|-------------|
+| **AI Market Analysis** | ✅ Released | Paste a Kalshi or Polymarket URL and get instant AI-powered analysis with probability estimates, confidence scores, and trading recommendations | [📖 Setup Guide](docs/features/market-analysis.md) |
+| **Betting Bots** | ✅ Released | Polymarket 15 Minute Up/Down Arbitrage Bot (more bots coming) | [📖 Setup Guide](docs/features/betting-bots.md) |
 
 ## 🔮 Coming Soon
 
 | Feature | Description |
 |---------|-------------|
 | **Agent Battles (x402)** | Pit AI agents against each other to discover winning strategies |
-| **Betting Bots** | Automated trading bots with customizable strategies |
 | **No Code Builder** | Build trading strategies without writing code |
 | **Whale Tracking** | Monitor and follow large traders across markets |
 | **Copytrading** | Automatically copy top-performing traders |
@@ -139,7 +137,13 @@ cd supabase
 cp .env.example .env.local
 ```
 
-Edit `.env.local` with your credentials:
+Edit `.env.local` with the credentials required for the features you want to use:
+
+> 📖 **Feature-specific setup guides:**
+> - **Market Analysis:** [docs/features/market-analysis.md](docs/features/market-analysis.md) — requires `DOME_API_KEY` + AI provider key (`XAI_API_KEY` or `OPENAI_API_KEY`)
+> - **Betting Bots:** [docs/features/betting-bots.md](docs/features/betting-bots.md) — requires `POLYMARKET_WALLET_PRIVATE_KEY` + `POLYMARKET_PROXY_WALLET_ADDRESS`
+
+Example for Market Analysis:
 
 ```env
 DOME_API_KEY=your_dome_api_key      # Get from https://dashboard.domeapi.io
@@ -149,9 +153,14 @@ XAI_API_KEY=your_xai_api_key        # Get from https://x.ai
 OPENAI_API_KEY=your_openai_api_key  # Get from https://platform.openai.com
 ```
 
-> 💡 **Note:** You only need ONE AI provider API key. If you have an xAI API key, you can use Grok models. If you have an OpenAI API key, you can use GPT models. You can also configure both to switch between providers.  
-> 
-> 🚀 **Coming soon:** You'll be able to run multiple agents in parallel for more powerful, concurrent analyses!
+Example for Betting Bots:
+
+```env
+POLYMARKET_WALLET_PRIVATE_KEY=0x...  # Your wallet private key
+POLYMARKET_PROXY_WALLET_ADDRESS=0x...  # Your Polymarket proxy wallet
+```
+
+> 💡 **Note:** See the setup guides linked above for detailed instructions on obtaining each API key and configuration.
 
 Start the Supabase services:
 
@@ -193,6 +202,11 @@ Edit `.env` with credentials from `supabase status`:
 ```env
 SUPABASE_URL=<API URL from supabase status>
 SUPABASE_ANON_KEY=<anon key from supabase status>
+
+# Edge Function URLs (for local development)
+# Note that the base url might vary depending on `supabase status`:
+SUPABASE_EDGE_FUNCTION_ANALYZE_EVENT_MARKETS=http://127.0.0.1:54321/functions/v1/analyze-event-markets  # Required for Market Analysis
+SUPABASE_EDGE_FUNCTION_BETTING_BOT=http://127.0.0.1:54321/functions/v1/polymarket-up-down-15-markets    # Required for Betting Bots
 ```
 
 Start the development server:
@@ -219,25 +233,34 @@ Your PredictOS terminal will be running at [http://localhost:3000](http://localh
 
 ## 🤝 Partners
 
-<div align="center">
-  <table>
-    <tr>
-      <td align="center" width="300">
-        <a href="https://domeapi.io/">
-          <img src="terminal/public/dome-icon-light.svg" alt="Dome API" width="80" height="80" />
-          <br />
-          <strong>Dome API</strong>
-        </a>
-        <br />
-        <sub>The unified API for prediction markets</sub>
-        <br /><br />
-        <a href="https://domeapi.io/">🌐 Website</a> · <a href="https://x.com/getdomeapi">𝕏 Twitter</a>
-      </td>
-    </tr>
-  </table>
-</div>
-
-PredictOS is proudly powered by [Dome](https://domeapi.io/) — the unified API that provides seamless access to Kalshi, Polymarket, and other prediction market platforms through a single, elegant interface. Dome handles the complexity of multi-platform data aggregation so we can focus on building the best trading tools.
+<table>
+  <tr>
+    <td width="120" align="center">
+      <a href="https://domeapi.io/">
+        <img src="terminal/public/dome-icon-light.svg" alt="Dome API" width="80" height="80" />
+      </a>
+    </td>
+    <td>
+      <h3><a href="https://domeapi.io/">Dome API</a></h3>
+      <p><strong>The unified API for prediction markets.</strong> Dome provides seamless access to Kalshi, Polymarket, and other prediction market platforms through a single, elegant interface.</p>
+      <p>🔗 PredictOS is proudly powered by Dome — they handle the complexity of multi-platform data aggregation so we can focus on building the best trading tools.</p>
+      <p><a href="https://domeapi.io/">🌐 Website</a> · <a href="https://dashboard.domeapi.io/">📊 Dashboard</a> · <a href="https://x.com/getdomeapi">𝕏 Twitter</a></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="120" align="center">
+      <a href="https://tryokbet.com/">
+        <img src="terminal/public/okbet.svg" alt="OKBet" width="80" height="80" />
+      </a>
+    </td>
+    <td>
+      <h3><a href="https://tryokbet.com/">OKBet</a></h3>
+      <p><strong>The FIRST all-in-one prediction markets bot.</strong> Available on Telegram and soon on web, OKBet makes it easy to trade prediction markets from anywhere.</p>
+      <p>🔗 Our <a href="https://x.com/predict_agent">Predict_Agent</a> provides direct OKBet links to place bets on Kalshi and Polymarket in Telegram.</p>
+      <p><a href="https://t.me/okdotbet_bot">🤖 Telegram</a> · <a href="https://tryokbet.com/">🌐 Website</a> · <a href="https://docs.tryokbet.com/">📖 Docs</a> · <a href="https://x.com/tryokbet">𝕏 Twitter</a></p>
+    </td>
+  </tr>
+</table>
 
 ## 💪 Contributing
 

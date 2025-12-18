@@ -43,7 +43,7 @@ const Terminal = () => {
       }
 
       // Call our server-side API
-      const response = await fetch("/api/analyze", {
+      const response = await fetch("/api/analyze-event-markets", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
