@@ -49,7 +49,7 @@ export async function request<T>(
     method,
     headers: {
       'Content-Type': 'application/json',
-      'X-API-Key': getApiKey(),
+      'Authorization': `Bearer ${getApiKey()}`,
       ...headers,
     },
   });

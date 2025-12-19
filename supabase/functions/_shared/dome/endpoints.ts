@@ -24,7 +24,7 @@ export async function getPolymarketMarkets(
   params?: PaginationParams & {
     active?: boolean;
     closed?: boolean;
-    slug?: string;
+    market_slug?: string;
   }
 ): Promise<PolymarketMarketsResponse> {
   return request<PolymarketMarketsResponse>('/polymarket/markets', {
