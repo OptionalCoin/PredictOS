@@ -257,6 +257,19 @@ Your PredictOS terminal will be running at [http://localhost:3000](http://localh
   </tr>
   <tr>
     <td width="120" align="center">
+      <a href="https://irys.xyz/">
+        <img src="terminal/public/iris.jpg" alt="IRYS" width="80" height="80" />
+      </a>
+    </td>
+    <td>
+      <h3><a href="https://irys.xyz/">IRYS</a></h3>
+      <p><strong>The high-performance datachain unifying storage and native smart contract execution.</strong></p>
+      <p>🔗 PredictOS will use IRYS as the data layer for prediction market agents and platforms.</p>
+      <p><a href="https://irys.xyz/">🌐 Website</a> · <a href="https://x.com/irys_xyz">𝕏 Twitter</a></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="120" align="center">
       <a href="https://tryokbet.com/">
         <img src="terminal/public/okbet.svg" alt="OKBet" width="80" height="80" />
       </a>
