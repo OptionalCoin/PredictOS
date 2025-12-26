@@ -69,11 +69,11 @@ A key feature driving adoption is the ability to **stake $PREDICT for attractive
 
 > 💡 **$PREDICT is more than a token** — it's the core fuel powering adoption, liquidity, and innovation in the live PredictOS framework, establishing it as a leader in decentralized social prediction markets.
 
-## 🎯 Current Features (v1.3.1)
+## 🎯 Current Features (v1.4.1)
 
 | Feature | Status | Description | Setup Guide |
 |---------|--------|-------------|-------------|
-| **AI Market Analysis** | ✅ Released | Paste a Kalshi or Polymarket URL and get instant AI-powered analysis with probability estimates, confidence scores, and trading recommendations. Includes **Polyfactual Deep Research** — ask any question and get comprehensive AI-powered answers with citations. | [📖 Setup Guide](docs/features/market-analysis.md) |
+| **AI Market Analysis** | ✅ Released | Paste a Kalshi or Polymarket URL and get instant AI-powered analysis with probability estimates, confidence scores, and trading recommendations. Includes **Polyfactual Deep Research** — ask any question and get comprehensive AI-powered answers with citations. For Kalshi markets, choose between **Dome** or **DFlow** as your data provider -- for Polymarket, default is **Dome**. | [📖 Setup Guide](docs/features/market-analysis.md) |
 | **Betting Bots** | ✅ Released | Polymarket 15 Minute Up/Down Arbitrage Bot — **Vanilla Mode** (single price straddle) and **Ladder Mode** (multi-level tapered allocation for maximized fill rates) | [📖 Setup Guide](docs/features/betting-bots.md) |
 | **Wallet Tracking** | ✅ Released | Real-time order tracking for any Polymarket wallets using Dome SDK WebSockets — 10 seconds faster than hosted bots | [📖 Setup Guide](docs/features/wallet-tracking.md) |
 
@@ -106,6 +106,7 @@ PredictOS/
     └── functions/
         ├── _shared/                 # Shared utilities
         │   ├── ai/                  # AI integrations (xAI Grok & OpenAI)
+        │   ├── dflow/               # DFlow API client (Kalshi markets)
         │   ├── dome/                # Dome API client
         │   └── polyfactual/         # Polyfactual Deep Research client
         ├── analyze-event-markets/   # Market analysis endpoint
@@ -236,6 +237,7 @@ Your PredictOS terminal will be running at [http://localhost:3000](http://localh
 **Backend:**
 - [Supabase Edge Functions](https://supabase.com/docs/guides/functions) — Serverless Deno runtime
 - [Dome API](https://domeapi.io/) — Unified prediction market data
+- [DFlow API](https://dflow.net/) — Alternative data provider for Kalshi markets *(currently dev endpoint, production coming soon)*
 - [xAI Grok](https://x.ai/) — xAI's reasoning models (Grok 4, Grok 4.1)
 - [OpenAI GPT](https://openai.com/) — OpenAI's language models (GPT-4.1, GPT-5)
 
@@ -292,6 +294,19 @@ Your PredictOS terminal will be running at [http://localhost:3000](http://localh
       <p><strong>Deep AI research & API layer for prediction markets.</strong> Polyfactual also provides Weekly Polymarket livestreams on news + ecosystem developments.</p>
       <p>🔗 PredictOS integrates Polyfactual's Deep Research API to power the Polyfactual tab in Market Analysis — ask any question and get comprehensive answers with citations.</p>
       <p><a href="https://www.polyfactual.com/">🌐 Website</a> · <a href="https://x.com/polyfactual">𝕏 Twitter</a></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="120" align="center">
+      <a href="https://heyanon.ai/">
+        <img src="terminal/public/heyanon.jpg" alt="Hey Anon" width="80" height="80" />
+      </a>
+    </td>
+    <td>
+      <h3><a href="https://heyanon.ai/">Hey Anon</a></h3>
+      <p><strong>Building AI tools for investors, traders, developers, and institutions — DeFAI.</strong> Hey Anon is launching Pandora, a fully permissionless prediction market where users can create their own markets and earn fees.</p>
+      <p>🔗 PredictOS is partnering with Hey Anon to integrate Pandora and bring Alpha Terminal insights to permissionless markets — together we're building the future of decentralized prediction markets.</p>
+      <p><a href="https://heyanon.ai/">🌐 Website</a> · <a href="https://x.com/HeyAnonai">𝕏 Twitter</a></p>
     </td>
   </tr>
 </table>
