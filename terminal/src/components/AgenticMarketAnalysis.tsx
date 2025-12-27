@@ -14,8 +14,12 @@ import {
   Layers,
   Sparkles,
   FileText,
-  Wrench
+  Wrench,
+  Eye,
+  Zap,
+  ExternalLink
 } from "lucide-react";
+import Image from "next/image";
 import type { 
   AgentConfig, 
   AggregatorConfig, 
@@ -25,7 +29,10 @@ import type {
   PmType,
   MarketAnalysis,
   GrokTool,
+  AgentTool,
+  PolyfactualResearchResult,
 } from "@/types/agentic";
+import type { PolyfactualResearchResponse } from "@/types/polyfactual";
 import AnalysisOutput from "./AnalysisOutput";
 import AggregatedAnalysisOutput from "./AggregatedAnalysisOutput";
 
@@ -57,13 +64,15 @@ const ALL_MODELS: ModelOption[] = [...GROK_MODELS, ...OPENAI_MODELS];
 
 // Tool options
 interface ToolOption {
-  value: GrokTool;
+  value: AgentTool;
   label: string;
+  grokOnly?: boolean;
 }
 
 const TOOL_OPTIONS: ToolOption[] = [
-  { value: "x_search", label: "X Search" },
-  { value: "web_search", label: "Web Search" },
+  { value: "x_search", label: "X Search", grokOnly: true },
+  { value: "web_search", label: "Web Search", grokOnly: true },
+  { value: "polyfactual", label: "PolyFactual Research", grokOnly: false },
 ];
 
 /**
@@ -87,13 +96,20 @@ function generateAgentId(): string {
   return `agent-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
+// Analysis mode type
+type AnalysisMode = 'supervised' | 'autonomous';
+
 const AgenticMarketAnalysis = () => {
   // URL state
   const [url, setUrl] = useState("");
   
+  // Analysis mode state (supervised = shows OkBet link, autonomous = no OkBet link)
+  const [analysisMode, setAnalysisMode] = useState<AnalysisMode>('supervised');
+  
   // Event data state
   const [eventData, setEventData] = useState<{
     eventIdentifier: string;
+    eventId?: string;
     pmType: PmType;
     markets: unknown[];
   } | null>(null);
@@ -122,6 +138,30 @@ const AgenticMarketAnalysis = () => {
   // Derived state
   const detectedUrlType = useMemo(() => detectUrlType(url), [url]);
   const showAggregator = agents.length > 1;
+  
+  // Check if analysis is complete (at least one agent completed, or aggregator completed if multiple agents)
+  const isAnalysisComplete = useMemo(() => {
+    if (agents.length === 1) {
+      return agents[0].status === 'completed';
+    }
+    return aggregator.status === 'completed' || agents.some(a => a.status === 'completed');
+  }, [agents, aggregator.status]);
+  
+  // Generate OkBet link based on platform type
+  const getOkBetLink = useMemo(() => {
+    if (!eventData) return null;
+    
+    if (eventData.pmType === 'Polymarket') {
+      // For Polymarket: https://t.me/okdotbet_bot?start=events_{event_id}
+      // Use eventId if available (fetched from Gamma API)
+      if (!eventData.eventId) return null;
+      return `https://t.me/okdotbet_bot?start=events_${eventData.eventId}`;
+    } else if (eventData.pmType === 'Kalshi') {
+      // For Kalshi: https://t.me/okdotbet_bot?start=kalshi_{event_ticker}
+      return `https://t.me/okdotbet_bot?start=kalshi_${eventData.eventIdentifier}`;
+    }
+    return null;
+  }, [eventData]);
   
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -164,18 +204,22 @@ const AgenticMarketAnalysis = () => {
   };
 
   const updateAgentModel = (agentId: string, model: string) => {
-    setAgents(prev => prev.map(a => 
-      a.id === agentId ? { 
-        ...a, 
-        model,
-        // Clear tools when switching to OpenAI (tools only work with Grok)
-        tools: isOpenAIModel(model) ? undefined : a.tools 
-      } : a
-    ));
+    setAgents(prev => prev.map(a => {
+      if (a.id !== agentId) return a;
+      
+      // When switching to OpenAI, only keep polyfactual tool (not Grok-only tools)
+      let newTools = a.tools;
+      if (isOpenAIModel(model) && a.tools) {
+        newTools = a.tools.filter(t => t === 'polyfactual') as AgentTool[];
+        if (newTools.length === 0) newTools = undefined;
+      }
+      
+      return { ...a, model, tools: newTools };
+    }));
     setOpenDropdown(null);
   };
 
-  const updateAgentTools = (agentId: string, tool: GrokTool) => {
+  const updateAgentTools = (agentId: string, tool: AgentTool) => {
     setAgents(prev => prev.map(a => {
       if (a.id !== agentId) return a;
       
@@ -183,11 +227,14 @@ const AgenticMarketAnalysis = () => {
       const isSelected = currentTool === tool;
       
       // Toggle: if same tool clicked, deselect; otherwise select the new one
-      const newTools: GrokTool[] | undefined = isSelected ? undefined : [tool];
+      const newTools: AgentTool[] | undefined = isSelected ? undefined : [tool];
       
-      // If selecting a tool and current model is OpenAI or empty, switch to Grok
+      // Check if this is a Grok-only tool
+      const isGrokOnlyTool = tool === 'x_search' || tool === 'web_search';
+      
+      // If selecting a Grok-only tool and current model is OpenAI or empty, switch to Grok
       let newModel = a.model;
-      if (newTools && (isOpenAIModel(a.model) || !a.model)) {
+      if (newTools && isGrokOnlyTool && (isOpenAIModel(a.model) || !a.model)) {
         newModel = "grok-4-1-fast-reasoning";
       }
       
@@ -262,6 +309,7 @@ const AgenticMarketAnalysis = () => {
 
       setEventData({
         eventIdentifier: eventsData.eventIdentifier,
+        eventId: eventsData.eventId,
         pmType: eventsData.pmType,
         markets: eventsData.markets,
       });
@@ -278,6 +326,10 @@ const AgenticMarketAnalysis = () => {
         ));
 
         try {
+          // Filter out polyfactual from tools (it's handled separately)
+          const grokTools = agent.tools?.filter(t => t === 'x_search' || t === 'web_search') as GrokTool[] | undefined;
+          const hasPolyfactual = agent.tools?.includes('polyfactual');
+
           const agentResponse = await fetch("/api/event-analysis-agent", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -286,7 +338,7 @@ const AgenticMarketAnalysis = () => {
               eventIdentifier: eventsData.eventIdentifier,
               pmType: eventsData.pmType,
               model: agent.model,
-              tools: agent.tools,
+              tools: grokTools && grokTools.length > 0 ? grokTools : undefined,
             }),
           });
 
@@ -296,9 +348,41 @@ const AgenticMarketAnalysis = () => {
             throw new Error(agentData.error || "Agent analysis failed");
           }
 
+          // If polyfactual tool is enabled, fetch research for this market
+          let polyfactualResearch: PolyfactualResearchResult | undefined;
+          if (hasPolyfactual && agentData.data.title) {
+            try {
+              const polyfactualResponse = await fetch("/api/polyfactual-research", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  query: agentData.data.title,
+                }),
+              });
+              
+              const polyfactualData: PolyfactualResearchResponse = await polyfactualResponse.json();
+              
+              if (polyfactualData.success && polyfactualData.answer) {
+                polyfactualResearch = {
+                  answer: polyfactualData.answer,
+                  citations: polyfactualData.citations || [],
+                  query: agentData.data.title,
+                };
+              }
+            } catch (pfError) {
+              console.warn("Failed to fetch Polyfactual research:", pfError);
+              // Continue without polyfactual research - don't fail the whole agent
+            }
+          }
+
           // Update status to completed
           setAgents(prev => prev.map(a => 
-            a.id === agent.id ? { ...a, status: 'completed', result: agentData.data } : a
+            a.id === agent.id ? { 
+              ...a, 
+              status: 'completed', 
+              result: agentData.data,
+              polyfactualResearch,
+            } : a
           ));
 
           completedAnalyses.push({
@@ -360,15 +444,32 @@ const AgenticMarketAnalysis = () => {
     }
   };
 
+  const getToolLabel = (tool: AgentTool): string => {
+    switch (tool) {
+      case 'x_search': return 'X Search';
+      case 'web_search': return 'Web Search';
+      case 'polyfactual': return 'PolyFactual Research';
+      default: return tool;
+    }
+  };
+
+  const getToolShortLabel = (tool: AgentTool): string => {
+    switch (tool) {
+      case 'x_search': return 'X';
+      case 'web_search': return 'Web';
+      case 'polyfactual': return 'PF';
+      default: return tool;
+    }
+  };
+
   const renderToolsDropdown = (
     agentId: string,
-    selectedTools: GrokTool[] | undefined,
+    selectedTools: AgentTool[] | undefined,
     disabled: boolean,
     isOpenAI: boolean,
     zIndex: number
   ) => {
     const dropdownId = `tools-${agentId}`;
-    const toolsDisabled = disabled || isOpenAI;
     const hasTools = selectedTools && selectedTools.length > 0;
     
     return (
@@ -379,11 +480,10 @@ const AgenticMarketAnalysis = () => {
       >
         <button
           type="button"
-          onClick={() => !toolsDisabled && setOpenDropdown(openDropdown === dropdownId ? null : dropdownId)}
-          disabled={toolsDisabled}
-          title={isOpenAI ? "Tools only work with Grok models" : undefined}
+          onClick={() => !disabled && setOpenDropdown(openDropdown === dropdownId ? null : dropdownId)}
+          disabled={disabled}
           className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs transition-all font-mono whitespace-nowrap ${
-            toolsDisabled 
+            disabled 
               ? 'bg-secondary/30 border-border/50 text-muted-foreground/50 cursor-not-allowed' 
               : hasTools
               ? 'bg-cyan-500/10 border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/20 hover:border-cyan-500'
@@ -392,50 +492,58 @@ const AgenticMarketAnalysis = () => {
         >
           <Wrench className="w-3 h-3" />
           <span className="hidden sm:inline">
-            {hasTools 
-              ? (selectedTools[0] === 'x_search' ? 'X Search' : 'Web Search')
-              : 'Tools'
-            }
+            {hasTools ? getToolLabel(selectedTools[0]) : 'Tools'}
           </span>
           <span className="sm:hidden">
-            {hasTools ? (selectedTools[0] === 'x_search' ? 'X' : 'Web') : '-'}
+            {hasTools ? getToolShortLabel(selectedTools[0]) : '-'}
           </span>
           <ChevronDown className={`w-3 h-3 transition-transform ${openDropdown === dropdownId ? 'rotate-180' : ''}`} />
         </button>
         
         {openDropdown === dropdownId && (
-          <div className="absolute right-0 top-full mt-1 w-48 bg-card border border-border rounded-lg shadow-xl overflow-hidden" style={{ zIndex: 1000 }}>
+          <div className="absolute right-0 top-full mt-1 w-52 bg-card border border-border rounded-lg shadow-xl overflow-hidden" style={{ zIndex: 1000 }}>
             <div className="px-3 py-2 bg-cyan-500/10 border-b border-border">
               <div className="flex items-center gap-2">
                 <Wrench className="w-3 h-3 text-cyan-400" />
-                <span className="text-xs font-semibold text-cyan-400">Grok Tools</span>
+                <span className="text-xs font-semibold text-cyan-400">Agent Tools</span>
               </div>
             </div>
             <div className="py-1">
               {TOOL_OPTIONS.map((tool) => {
                 const isSelected = selectedTools?.includes(tool.value);
+                const isGrokOnlyDisabled = tool.grokOnly && isOpenAI;
                 return (
                   <button
                     key={tool.value}
                     type="button"
-                    onClick={() => updateAgentTools(agentId, tool.value)}
+                    onClick={() => !isGrokOnlyDisabled && updateAgentTools(agentId, tool.value)}
+                    disabled={isGrokOnlyDisabled}
                     className={`w-full px-4 py-2.5 text-left text-sm font-mono transition-colors flex items-center justify-between ${
-                      isSelected
+                      isGrokOnlyDisabled
+                        ? 'text-muted-foreground/40 cursor-not-allowed'
+                        : isSelected
                         ? 'bg-cyan-500/20 text-cyan-400'
                         : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                     }`}
                   >
-                    <span>{tool.label}</span>
+                    <span className="flex items-center gap-2">
+                      {tool.label}
+                      {tool.grokOnly && (
+                        <span className="text-[9px] px-1 py-0.5 rounded bg-orange-500/20 text-orange-400">Grok</span>
+                      )}
+                    </span>
                     {isSelected && <CheckCircle2 className="w-3.5 h-3.5" />}
                   </button>
                 );
               })}
             </div>
-            <div className="px-3 py-2 border-t border-border bg-secondary/30">
-              <p className="text-[10px] text-muted-foreground">
-                Tools only work with Grok models
-              </p>
-            </div>
+            {isOpenAI && (
+              <div className="px-3 py-2 border-t border-border bg-secondary/30">
+                <p className="text-[10px] text-muted-foreground">
+                  X/Web search only work with Grok
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -646,7 +754,38 @@ const AgenticMarketAnalysis = () => {
           {/* Agent Configuration Section */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-display text-sm text-muted-foreground">ANALYSIS AGENTS</h3>
+              <div className="flex items-center gap-3">
+                <h3 className="font-display text-sm text-muted-foreground">ANALYSIS AGENTS</h3>
+                {/* Mode Toggle */}
+                <div className="flex items-center bg-secondary/50 rounded-md border border-border/50 overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setAnalysisMode('supervised')}
+                    disabled={isRunning}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono transition-all ${
+                      analysisMode === 'supervised'
+                        ? 'bg-amber-500/20 text-amber-400 border-r border-amber-500/30'
+                        : 'text-muted-foreground hover:text-foreground border-r border-border/50'
+                    }`}
+                  >
+                    <Eye className="w-3 h-3" />
+                    Supervised
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAnalysisMode('autonomous')}
+                    disabled={isRunning}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono transition-all ${
+                      analysisMode === 'autonomous'
+                        ? 'bg-emerald-500/20 text-emerald-400'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <Zap className="w-3 h-3" />
+                    Autonomous
+                  </button>
+                </div>
+              </div>
               <button
                 onClick={addAgent}
                 disabled={isRunning}
@@ -716,7 +855,8 @@ const AgenticMarketAnalysis = () => {
                           (model) => updateAgentModel(agent.id, model),
                           isRunning,
                           agentZIndex + 50,
-                          agent.tools && agent.tools.length > 0
+                          // Only restrict to Grok when Grok-only tools are selected
+                          agent.tools?.some(t => t === 'x_search' || t === 'web_search') ?? false
                         )}
                         {agents.length > 1 && (
                           <button
@@ -736,6 +876,7 @@ const AgenticMarketAnalysis = () => {
                         <AnalysisOutput
                           analysis={agent.result!}
                           timestamp={new Date()}
+                          polyfactualResearch={agent.polyfactualResearch}
                         />
                       </div>
                     )}
@@ -820,6 +961,58 @@ const AgenticMarketAnalysis = () => {
                       />
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* OkBet Box - Always shows in supervised mode */}
+              {analysisMode === 'supervised' && (
+                <div 
+                  className="relative border rounded-lg bg-gradient-to-r from-amber-500/5 to-orange-500/5 backdrop-blur-sm border-amber-500/30 transition-all"
+                  style={{ zIndex: 5 }}
+                >
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <Image 
+                        src="/okbet.svg" 
+                        alt="OkBet" 
+                        width={20} 
+                        height={20} 
+                        className="w-5 h-5"
+                      />
+                      <span className="font-display text-sm text-amber-400">
+                        OkBet
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="px-4 pb-4">
+                    {isAnalysisComplete ? (
+                      getOkBetLink ? (
+                        <>
+                          <p className="text-xs text-muted-foreground mb-3">
+                            You can place bets through OkBet with the one-click link:
+                          </p>
+                          <a
+                            href={getOkBetLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-3 py-2 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm font-mono hover:bg-amber-500/20 hover:border-amber-500/50 transition-all group"
+                          >
+                            <ExternalLink className="w-4 h-4 flex-shrink-0" />
+                            <span className="truncate">{getOkBetLink}</span>
+                          </a>
+                        </>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">
+                          OkBet link unavailable for this event.
+                        </p>
+                      )
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        The one-click OkBet links will appear here.
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

@@ -19,6 +19,8 @@ export interface GetEventsRequest {
 export interface GetEventsResponse {
   success: boolean;
   eventIdentifier?: string;
+  /** Event ID (for Polymarket - used for OkBet links) */
+  eventId?: string;
   pmType?: PmType;
   markets?: unknown[];
   marketsCount?: number;
@@ -128,12 +130,27 @@ export interface AnalysisAggregatorResponse {
 /** Tool types available for Grok models */
 export type GrokTool = 'x_search' | 'web_search';
 
+/** Tool types available for all agents (includes non-Grok tools) */
+export type AgentTool = GrokTool | 'polyfactual';
+
+/** Polyfactual research result to be appended to analysis */
+export interface PolyfactualResearchResult {
+  answer: string;
+  citations: {
+    url?: string;
+    title?: string;
+    snippet?: string;
+  }[];
+  query: string;
+}
+
 export interface AgentConfig {
   id: string;
   model: string;
-  tools?: GrokTool[];
+  tools?: AgentTool[];
   status: 'idle' | 'running' | 'completed' | 'error';
   result?: MarketAnalysis;
+  polyfactualResearch?: PolyfactualResearchResult;
   error?: string;
 }
 
