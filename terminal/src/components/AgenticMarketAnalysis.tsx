@@ -318,8 +318,8 @@ const AgenticMarketAnalysis = () => {
     try {
       // Step 1: Fetch event data
       setIsLoadingEvents(true);
-      // Kalshi uses DFlow, Polymarket uses Dome
-      const effectiveDataProvider = detectedUrlType === 'kalshi' ? 'dflow' : 'dome';
+      // Both Kalshi and Polymarket use Dome API
+      const effectiveDataProvider = 'dome';
       
       const eventsResponse = await fetch("/api/get-events", {
         method: "POST",
@@ -897,13 +897,13 @@ const AgenticMarketAnalysis = () => {
               Deploy multiple AI agents to analyze prediction markets. Each agent provides independent analysis, then a judge agent synthesizes all perspectives.
             </p>
             <a 
-              href="https://pond.dflow.net/introduction" 
+              href="https://domeapi.io/" 
               target="_blank" 
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50 border border-border/50 text-xs text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors"
             >
-              <span className="text-violet-400 font-bold">DF</span>
-              <span>Powered by DFlow</span>
+              <span className="text-cyan-400 font-bold">◉</span>
+              <span>Powered by Dome</span>
             </a>
           </div>
 
@@ -940,15 +940,9 @@ const AgenticMarketAnalysis = () => {
             {/* Data Provider Display */}
             {detectedUrlType !== 'none' && (
               <div className="absolute bottom-3 right-4 flex items-center gap-1">
-                {detectedUrlType === 'kalshi' ? (
-                  <span className="px-2 py-0.5 text-[10px] font-mono bg-violet-500/20 text-violet-400 rounded-md border border-violet-500/30">
-                    DFlow
-                  </span>
-                ) : (
-                  <span className="px-2 py-0.5 text-[10px] font-mono bg-cyan-500/20 text-cyan-400 rounded-md border border-cyan-500/30">
-                    Dome
-                  </span>
-                )}
+                <span className="px-2 py-0.5 text-[10px] font-mono bg-cyan-500/20 text-cyan-400 rounded-md border border-cyan-500/30">
+                  Dome
+                </span>
               </div>
             )}
             
@@ -999,7 +993,7 @@ const AgenticMarketAnalysis = () => {
               <div className="flex items-center gap-3">
                 <h3 className={`font-display text-sm transition-colors ${
                   isRunning ? 'text-primary' : 'text-muted-foreground'
-                }`}>ANALYSIS AGENTS</h3>
+                }`}>PREDICT AGENTS</h3>
                 {/* Mode Toggle */}
                 <div className="flex items-center bg-secondary/50 rounded-md border border-border/50 overflow-hidden">
                   <button
@@ -1621,7 +1615,7 @@ const AgenticMarketAnalysis = () => {
                           autonomousOrderStatus === 'error' ? 'text-destructive' : 
                           autonomousOrderStatus === 'skipped' ? 'text-amber-400' : 'text-emerald-400'
                         }`}>
-                          Autonomous Order
+                          Mapper Agent + Autonomous Execution
                           {autonomousOrderStatus === 'placing' && (
                             <span className="text-emerald-400/50 text-xs ml-2 typing-dots">placing</span>
                           )}
@@ -1724,7 +1718,7 @@ const AgenticMarketAnalysis = () => {
                       </div>
                       
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-display text-sm text-success mb-1">Analysis Complete</h4>
+                        <h4 className="font-display text-sm text-success mb-1">Agents&apos; Consensus:</h4>
                         <p className="text-xs text-muted-foreground mb-3">
                           {agents.filter(a => a.status === 'completed').length} agent{agents.filter(a => a.status === 'completed').length > 1 ? 's' : ''} analyzed the market
                           {showAggregator && aggregator.status === 'completed' && ' with consolidated insights'}
