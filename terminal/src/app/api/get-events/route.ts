@@ -31,6 +31,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Determine data provider based on URL: Kalshi → dflow, Polymarket → dome
+    const isKalshi = body.url.toLowerCase().includes("kalshi");
+    const dataProvider = isKalshi ? "dflow" : "dome";
+
     const edgeFunctionUrl = process.env.SUPABASE_EDGE_FUNCTION_GET_EVENTS 
       || `${supabaseUrl}/functions/v1/get-events`;
     
@@ -43,7 +47,7 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         url: body.url,
-        dataProvider: body.dataProvider || 'dome',
+        dataProvider,
       }),
     });
 

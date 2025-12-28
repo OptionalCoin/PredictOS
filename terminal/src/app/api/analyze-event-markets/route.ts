@@ -48,6 +48,9 @@ export async function POST(request: NextRequest) {
     // Auto-detect pmType based on URL if not provided
     const pmType = body.pmType || (body.url.includes("kalshi.com") ? "Kalshi" : "Polymarket");
 
+    // Determine data provider based on URL: Kalshi → dflow, Polymarket → dome
+    const dataProvider = pmType === "Kalshi" ? "dflow" : "dome";
+
     // Call the Supabase Edge Function
     const edgeFunctionUrl = process.env.SUPABASE_EDGE_FUNCTION_ANALYZE_EVENT_MARKETS 
       || `${supabaseUrl}/functions/v1/analyze-event-markets`;
@@ -64,7 +67,7 @@ export async function POST(request: NextRequest) {
         question: body.question,
         pmType,
         model: body.model,
-        dataProvider: body.dataProvider || 'dome',
+        dataProvider,
       }),
     });
 

@@ -95,8 +95,9 @@ Deno.serve(async (req: Request) => {
     const selectedModel = model || "grok-4-1-fast-reasoning";
     const useOpenAI = isOpenAIModel(selectedModel);
     
-    // Use provided dataProvider or default to dome
-    const selectedDataProvider = dataProvider || "dome";
+    // Enforce data provider based on market type: Kalshi → dflow, Polymarket → dome
+    // (ignore any passed dataProvider value - enforce server-side)
+    const selectedDataProvider = pmType === "Kalshi" ? "dflow" : "dome";
 
     // Validate required parameters
     if (!url) {

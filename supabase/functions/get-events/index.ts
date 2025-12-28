@@ -149,7 +149,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const { url, dataProvider = 'dome' } = requestBody;
+    const { url } = requestBody;
 
     // Validate URL
     if (!url) {
@@ -161,6 +161,9 @@ Deno.serve(async (req: Request) => {
 
     // Detect market type
     const pmType = detectPmType(url);
+    
+    // Enforce data provider based on market type: Kalshi → dflow, Polymarket → dome
+    const dataProvider = pmType === 'Kalshi' ? 'dflow' : 'dome';
     if (!pmType) {
       return new Response(
         JSON.stringify({ success: false, error: "Could not detect prediction market type from URL. Use Kalshi or Polymarket URLs." }),
