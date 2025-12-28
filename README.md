@@ -13,7 +13,7 @@
   <p><a href="https://predictionxbt.fun">🌐 Social Prediction Markets</a> · <a href="https://x.com/prediction_xbt">𝕏 PredictionXBT</a> · <a href="https://predictionxbt.fun/terminal">🖥️ Alpha/Arb Terminal</a> · <a href="https://x.com/predict_agent">🤖 Predict Agent</a></p>
 
   <a href="https://github.com/PredictionXBT/PredictOS/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License"></a>
-  <a href="https://github.com/PredictionXBT/PredictOS"><img src="https://img.shields.io/badge/version-1.0.1-blue?style=for-the-badge" alt="Version"></a>
+  <a href="https://github.com/PredictionXBT/PredictOS"><img src="https://img.shields.io/badge/version-2.0.0-blue?style=for-the-badge" alt="Version"></a>
 
 </div>
 
@@ -46,7 +46,8 @@ Whether you're a casual trader looking for quick market analysis or a power user
 **What's next?** We're building towards a complete prediction market toolkit: automated betting bots, whale tracking, copytrading, cross-platform arbitrage, and more. See the [Coming Soon](#-coming-soon) section for the full roadmap.
 
 <div align="center">
-  <a href="https://domeapi.io/"><img src="https://img.shields.io/badge/Powered%20by-Dome%20API-00D4AA?style=for-the-badge" alt="Dome API" /></a>
+  <a href="https://domeapi.io/"><img src="https://img.shields.io/badge/Polymarket-Dome%20API-00D4AA?style=for-the-badge" alt="Dome API" /></a>
+  <a href="https://pond.dflow.net/introduction"><img src="https://img.shields.io/badge/Kalshi-DFlow%20API-6366F1?style=for-the-badge" alt="DFlow API" /></a>
 </div>
 
 ## 💎 The $PREDICT Token
@@ -69,11 +70,47 @@ A key feature driving adoption is the ability to **stake $PREDICT for attractive
 
 > 💡 **$PREDICT is more than a token** — it's the core fuel powering adoption, liquidity, and innovation in the live PredictOS framework, establishing it as a leader in decentralized social prediction markets.
 
-## 🎯 Current Features (v1.4.1)
+## 🧠 Introducing Predict Super Intelligence: PredictOS V2 Release
+
+**Predict Super Intelligence** represents the next evolution of PredictOS — a powerful multi-agent AI system that enables intelligent, team-like analysis and execution across prediction markets.
+
+### The Vision
+
+Traditional market analysis tools give you a single perspective. Predict Super Intelligence breaks this paradigm by custom-bulding **multiple AI agents** and making them work together, each bringing unique capabilities, tools, and models to form a comprehensive market view.
+
+### How It Works
+
+Predict Super Intelligence operates through a sophisticated **agent pipeline**:
+
+1. **Predict Agents** — Deploy one or more AI agents (using xAI Grok or OpenAI GPT models -- Gemini coming in future releases) to independently analyze prediction markets. Each agent can be equipped with different tools (X Search, Web Search, Polyfactual Research) and custom commands to focus their analysis.
+
+2. **Predict Bookmaker Agent** — When multiple agents complete their analysis, the Bookmaker Agent acts as a "judge" that synthesizes all perspectives, weighs agreements and disagreements, and produces a consolidated recommendation with consensus metrics.
+
+3. **Mapper Agent** — Translates analysis outputs into platform-specific order parameters ready for execution.
+
+### Two Modes of Operation
+
+| Mode | Description | Use Case |
+|------|-------------|----------|
+| **🔍 Supervised** | Agents analyze the market and provide recommendations. User reviews the analysis and can execute via OkBet one-click links. | Research, learning, manual trading |
+| **⚡ Autonomous** | Agents analyze the market and automatically execute trades based on recommendations (within your budget limits). Currently, single Polymarket market is supported. Batch market + Kalshi coming soon. | Automated trading, hands-off execution |
+
+### Key Features
+
+- **Multi-Model Support** — Mix and match xAI Grok (4.1, 4) and OpenAI GPT (5.2, 5.1, 4.1) models
+- **Tool-Augmented Analysis** — Agents can use X (Twitter) search, Web search, and Polyfactual deep research
+- **Custom Commands** — Direct agent focus with natural language instructions
+- **Real-Time Pipeline Visualization** — Watch agents work through the analysis pipeline
+- **Consensus Metrics** — See how agents agree or disagree on recommendations
+- **Budget Controls** — Set strict limits for autonomous execution (\$1-\$100)
+
+> 📖 **[Full Setup Guide →](docs/features/super-intelligence.md)**
+
+## 🎯 Current Features (v2.0.0)
 
 | Feature | Status | Description | Setup Guide |
 |---------|--------|-------------|-------------|
-| **AI Market Analysis** | ✅ Released | Paste a Kalshi or Polymarket URL and get instant AI-powered analysis with probability estimates, confidence scores, and trading recommendations. Includes **Polyfactual Deep Research** — ask any question and get comprehensive AI-powered answers with citations. For Kalshi markets, choose between **Dome** or **DFlow** as your data provider -- for Polymarket, default is **Dome**. | [📖 Setup Guide](docs/features/market-analysis.md) |
+| **🧠 Super Intelligence** | ✅ Released | Multi-agent AI system with Supervised and Autonomous modes. Deploy multiple AI agents with different models and tools, aggregate insights via Bookmaker Agent, and execute trades automatically or via OkBet. Includes AI-powered market analysis and Polyfactual Deep Research. | [📖 Setup Guide](docs/features/super-intelligence.md) |
 | **Betting Bots** | ✅ Released | Polymarket 15 Minute Up/Down Arbitrage Bot — **Vanilla Mode** (single price straddle) and **Ladder Mode** (multi-level tapered allocation for maximized fill rates) | [📖 Setup Guide](docs/features/betting-bots.md) |
 | **Wallet Tracking** | ✅ Released | Real-time order tracking for any Polymarket wallets using Dome SDK WebSockets — 10 seconds faster than hosted bots | [📖 Setup Guide](docs/features/wallet-tracking.md) |
 
@@ -92,29 +129,69 @@ A key feature driving adoption is the ability to **stake $PREDICT for attractive
 
 ## 📦 Architecture
 
+### Data Providers
+
+PredictOS uses specialized data providers for each prediction market platform:
+
+| Platform | Data Provider | API Endpoint | Features |
+|----------|---------------|--------------|----------|
+| **Kalshi** | 🔷 DFlow | `dev-prediction-markets-api.dflow.net` | Event data, market prices, volume, liquidity, open interest |
+| **Polymarket** | 🌐 Dome | `api.domeapi.io` | Market data, CLOB tokens, WebSocket feeds, order execution |
+
+> ⚠️ **Note:** The DFlow endpoint above (`dev-prediction-markets-api.dflow.net`) is their **development environment**. For production endpoints and API keys, please [contact DFlow](https://x.com/dflow) directly.
+
+### Project Structure
+
 ```
 PredictOS/
 ├── terminal/                        # Frontend (Next.js 14)
 │   ├── src/
 │   │   ├── app/                     # Next.js App Router
+│   │   │   ├── api/                 # API routes (proxy to Edge Functions)
+│   │   │   │   ├── bookmaker-agent/
+│   │   │   │   ├── event-analysis-agent/
+│   │   │   │   ├── get-events/
+│   │   │   │   ├── mapper-agent/
+│   │   │   │   ├── polyfactual-research/
+│   │   │   │   ├── polymarket-put-order/
+│   │   │   │   └── wallet-tracking/
+│   │   │   ├── market-analysis/     # Super Intelligence UI
+│   │   │   ├── betting-bots/        # Betting Bots UI
+│   │   │   └── wallet-tracking/     # Wallet Tracking UI
 │   │   ├── components/              # React components
+│   │   │   ├── AgenticMarketAnalysis.tsx   # Super Intelligence component
+│   │   │   ├── BettingBotTerminal.tsx
+│   │   │   └── WalletTrackingTerminal.tsx
 │   │   └── types/                   # TypeScript definitions
 │   └── public/                      # Static assets
 │
-└── supabase/                        # Backend (Supabase)
-    ├── migrations/                  # DB migrations (future features)
+└── supabase/                        # Backend (Supabase Edge Functions)
     └── functions/
         ├── _shared/                 # Shared utilities
         │   ├── ai/                  # AI integrations (xAI Grok & OpenAI)
-        │   ├── dflow/               # DFlow API client (Kalshi markets)
-        │   ├── dome/                # Dome API client
-        │   └── polyfactual/         # Polyfactual Deep Research client
-        ├── analyze-event-markets/   # Market analysis endpoint
+        │   │   ├── callGrok.ts
+        │   │   ├── callOpenAI.ts
+        │   │   └── prompts/         # Agent prompts
+        │   ├── dflow/               # DFlow API client (Kalshi data)
+        │   │   ├── client.ts
+        │   │   ├── endpoints.ts
+        │   │   └── types.ts
+        │   ├── dome/                # Dome API client (Polymarket data)
+        │   │   ├── client.ts
+        │   │   ├── endpoints.ts
+        │   │   └── types.ts
+        │   ├── polyfactual/         # Polyfactual Research client
+        │   └── polymarket/          # Polymarket trading client
+        ├── get-events/              # Fetch market data from URL
+        ├── event-analysis-agent/    # Individual agent analysis
+        ├── bookmaker-agent/         # Multi-agent aggregator
+        ├── mapper-agent/            # Analysis-to-order translator
+        ├── polymarket-put-order/    # Order execution
         ├── polyfactual-research/    # Deep research endpoint
-        └── <feature-name>/          # Future edge functions
+        └── polymarket-up-down-.../  # Betting bot endpoint
 ```
 
-> 💡 **Extensibility:** New features are added as Edge Functions under `supabase/functions/<feature-name>/` with shared logic in `_shared/`. Database schemas live in `supabase/migrations/`.
+> 💡 **Extensibility:** New agents and features are added as Edge Functions under `supabase/functions/<feature-name>/` with shared logic in `_shared/`. The modular architecture allows mixing different AI providers, tools, and execution strategies.
 
 ## 🏁 Getting Started
 
@@ -144,28 +221,27 @@ cp .env.example .env.local
 Edit `.env.local` with the credentials required for the features you want to use:
 
 > 📖 **Feature-specific setup guides:**
-> - **Market Analysis:** [docs/features/market-analysis.md](docs/features/market-analysis.md) — requires `DOME_API_KEY` + AI provider key (`XAI_API_KEY` or `OPENAI_API_KEY`). Polyfactual tab requires `POLYFACTUAL_API_KEY`.
+> - **Super Intelligence:** [docs/features/super-intelligence.md](docs/features/super-intelligence.md) — requires `DOME_API_KEY` (Polymarket) + AI provider keys (`XAI_API_KEY` and/or `OPENAI_API_KEY`). DFlow API is used automatically for Kalshi (no key required). Optional: `POLYFACTUAL_API_KEY` for Polyfactual tool. For Autonomous mode: `POLYMARKET_WALLET_PRIVATE_KEY` + `POLYMARKET_PROXY_WALLET_ADDRESS`.
 > - **Betting Bots:** [docs/features/betting-bots.md](docs/features/betting-bots.md) — requires `POLYMARKET_WALLET_PRIVATE_KEY` + `POLYMARKET_PROXY_WALLET_ADDRESS`
 > - **Wallet Tracking:** [docs/features/wallet-tracking.md](docs/features/wallet-tracking.md) — requires `DOME_API_KEY` (frontend only, no Supabase needed)
 
-Example for Market Analysis:
+Example for Super Intelligence (full setup):
 
 ```env
-DOME_API_KEY=your_dome_api_key      # Get from https://dashboard.domeapi.io
+# Market Data Providers
+DOME_API_KEY=your_dome_api_key              # Get from https://dashboard.domeapi.io (for Polymarket)
+# Note: DFlow API is used automatically for Kalshi markets (no API key required)
 
-# AI Provider (only one is required)
-XAI_API_KEY=your_xai_api_key        # Get from https://x.ai
-OPENAI_API_KEY=your_openai_api_key  # Get from https://platform.openai.com
+# AI Providers (configure one or both)
+XAI_API_KEY=your_xai_api_key                # Get from https://x.ai
+OPENAI_API_KEY=your_openai_api_key          # Get from https://platform.openai.com
 
-# Polyfactual Deep Research (optional, for Polyfactual tab)
-POLYFACTUAL_API_KEY=your_polyfactual_api_key  # Contact Polyfactual to obtain
-```
+# Polyfactual Tool (optional, enables Polyfactual research tool)
+POLYFACTUAL_API_KEY=your_polyfactual_key    # Contact Polyfactual to obtain
 
-Example for Betting Bots:
-
-```env
-POLYMARKET_WALLET_PRIVATE_KEY=0x...  # Your wallet private key
-POLYMARKET_PROXY_WALLET_ADDRESS=0x...  # Your Polymarket proxy wallet
+# Autonomous Mode (optional, for auto-execution on Polymarket)
+POLYMARKET_WALLET_PRIVATE_KEY=0x...         # Your wallet private key
+POLYMARKET_PROXY_WALLET_ADDRESS=0x...       # Your Polymarket proxy wallet
 ```
 
 > 💡 **Note:** See the setup guides linked above for detailed instructions on obtaining each API key and configuration.
@@ -213,9 +289,17 @@ SUPABASE_ANON_KEY=<anon key from supabase status>
 
 # Edge Function URLs (for local development)
 # Note that the base url might vary depending on `supabase status`:
-SUPABASE_EDGE_FUNCTION_ANALYZE_EVENT_MARKETS=http://127.0.0.1:54321/functions/v1/analyze-event-markets  # Required for Market Analysis
-SUPABASE_EDGE_FUNCTION_POLYFACTUAL_RESEARCH=http://127.0.0.1:54321/functions/v1/polyfactual-research    # Required for Polyfactual tab
-SUPABASE_EDGE_FUNCTION_BETTING_BOT=http://127.0.0.1:54321/functions/v1/polymarket-up-down-15-markets    # Required for Betting Bots
+
+# Super Intelligence endpoints
+SUPABASE_EDGE_FUNCTION_GET_EVENTS=http://127.0.0.1:54321/functions/v1/get-events
+SUPABASE_EDGE_FUNCTION_EVENT_ANALYSIS_AGENT=http://127.0.0.1:54321/functions/v1/event-analysis-agent
+SUPABASE_EDGE_FUNCTION_BOOKMAKER_AGENT=http://127.0.0.1:54321/functions/v1/bookmaker-agent
+SUPABASE_EDGE_FUNCTION_MAPPER_AGENT=http://127.0.0.1:54321/functions/v1/mapper-agent
+SUPABASE_EDGE_FUNCTION_POLYMARKET_PUT_ORDER=http://127.0.0.1:54321/functions/v1/polymarket-put-order
+SUPABASE_EDGE_FUNCTION_POLYFACTUAL_RESEARCH=http://127.0.0.1:54321/functions/v1/polyfactual-research
+
+# Betting Bots endpoint
+SUPABASE_EDGE_FUNCTION_BETTING_BOT=http://127.0.0.1:54321/functions/v1/polymarket-up-down-15-markets
 ```
 
 Start the development server:
@@ -236,14 +320,28 @@ Your PredictOS terminal will be running at [http://localhost:3000](http://localh
 
 **Backend:**
 - [Supabase Edge Functions](https://supabase.com/docs/guides/functions) — Serverless Deno runtime
-- [Dome API](https://domeapi.io/) — Unified prediction market data
-- [DFlow API](https://dflow.net/) — Alternative data provider for Kalshi markets *(currently dev endpoint, production coming soon)*
+- [DFlow API](https://pond.dflow.net/introduction) — Kalshi prediction market data
+- [Dome API](https://domeapi.io/) — Polymarket data & trading
 - [xAI Grok](https://x.ai/) — xAI's reasoning models (Grok 4, Grok 4.1)
 - [OpenAI GPT](https://openai.com/) — OpenAI's language models (GPT-4.1, GPT-5)
 
 ## 🤝 Partners
 
 <table>
+<tr>
+    <td width="120" align="center">
+      <a href="https://pond.dflow.net/introduction">
+        <img src="terminal/public/Dflow_logo.png" alt="DFlow" width="80" height="80" style="border-radius: 12px; background: #1e1b4b; padding: 8px;" />
+      </a>
+    </td>
+    <td>
+      <h3><a href="https://pond.dflow.net/introduction">DFlow</a></h3>
+      <p><strong>High-precision, low-latency Solana DEX aggregator.</strong> DFlow delivers the most advanced trading infrastructure on Solana, unlocking cutting-edge financial markets for applications.</p>
+      <p>Their Prediction Markets API provides a seamless, programmatic gateway to tokenized Kalshi event contracts — offering deep liquidity, broad coverage, and full onchain composability.</p>
+      <p>🔗 PredictOS integrates DFlow's Prediction Markets API to bring tokenized <strong>Kalshi</strong> markets directly to Solana builders, empowering agentic workflows and multi-agent collaborations powered by real-world predictive intelligence.</p>
+      <p><a href="https://pond.dflow.net/introduction">🌐 Website</a> · <a href="https://x.com/dflow">𝕏 Twitter</a></p>
+    </td>
+  </tr>
   <tr>
     <td width="120" align="center">
       <a href="https://domeapi.io/">
@@ -252,8 +350,8 @@ Your PredictOS terminal will be running at [http://localhost:3000](http://localh
     </td>
     <td>
       <h3><a href="https://domeapi.io/">Dome API</a></h3>
-      <p><strong>The unified API for prediction markets.</strong> Dome provides seamless access to Kalshi, Polymarket, and other prediction market platforms through a single, elegant interface.</p>
-      <p>🔗 PredictOS is proudly powered by Dome — they handle the complexity of multi-platform data aggregation so we can focus on building the best trading tools.</p>
+      <p><strong>The unified API for prediction markets.</strong> Dome provides seamless access to Polymarket through an elegant interface with WebSocket support for real-time data.</p>
+      <p>🔗 PredictOS uses Dome for <strong>Polymarket</strong> market data, order execution, and real-time wallet tracking via WebSocket feeds.</p>
       <p><a href="https://domeapi.io/">🌐 Website</a> · <a href="https://dashboard.domeapi.io/">📊 Dashboard</a> · <a href="https://x.com/getdomeapi">𝕏 Twitter</a></p>
     </td>
   </tr>
@@ -292,7 +390,7 @@ Your PredictOS terminal will be running at [http://localhost:3000](http://localh
     <td>
       <h3><a href="https://www.polyfactual.com/">Polyfactual</a></h3>
       <p><strong>Deep AI research & API layer for prediction markets.</strong> Polyfactual also provides Weekly Polymarket livestreams on news + ecosystem developments.</p>
-      <p>🔗 PredictOS integrates Polyfactual's Deep Research API to power the Polyfactual tab in Market Analysis — ask any question and get comprehensive answers with citations.</p>
+      <p>🔗 PredictOS integrates Polyfactual's Deep Research API to power the Polyfactual tool in Super Intelligence — enabling agents to get comprehensive answers with citations.</p>
       <p><a href="https://www.polyfactual.com/">🌐 Website</a> · <a href="https://x.com/polyfactual">𝕏 Twitter</a></p>
     </td>
   </tr>
@@ -339,6 +437,5 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 
 <div align="center">
   <p>Built with ❤️ by the PredictionXBT team</p>
-  <p><sub>Powered by <a href="https://domeapi.io/">Dome</a></sub></p>
+  <p><sub>Powered by <a href="https://domeapi.io/">Dome</a> (Polymarket) & <a href="https://pond.dflow.net/introduction">DFlow</a> (Kalshi)</sub></p>
 </div>
-
