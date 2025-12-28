@@ -1,20 +1,31 @@
-/** Data provider for market data */
-export type DataProvider = 'dome' | 'dflow';
+/**
+ * Type definitions for event-analysis-agent edge function
+ */
+
+/** Prediction market type */
+export type PmType = 'Kalshi' | 'Polymarket';
+
+/** Tool types available for Grok models */
+export type GrokTool = 'x_search' | 'web_search';
 
 /**
- * Request body for the analyze-market endpoint
+ * Request body for the event-analysis-agent endpoint
  */
-export interface AnalyzeMarketRequest {
-  /** Prediction market URL - the ticker will be extracted from the last path segment */
-  url: string;
-  /** User's question about this event/markets */
-  question: string;
-  /** Prediction market type (e.g., "Kalshi", "Polymarket") - auto-detected if not provided */
-  pmType?: string;
-  /** Grok model to use for analysis */
-  model?: string;
-  /** Data provider for market data (dome or dflow) - defaults to dome */
-  dataProvider?: DataProvider;
+export interface EventAnalysisAgentRequest {
+  /** Raw market data from the provider */
+  markets: unknown[];
+  /** Event identifier (ticker for Kalshi, slug for Polymarket) */
+  eventIdentifier: string;
+  /** Prediction market type */
+  pmType: PmType;
+  /** AI model to use for analysis */
+  model: string;
+  /** Optional custom question for analysis */
+  question?: string;
+  /** Optional tools for Grok models (X Search, Web Search) */
+  tools?: GrokTool[];
+  /** Optional user command to prioritize in the analysis */
+  userCommand?: string;
 }
 
 /**
@@ -60,40 +71,22 @@ export interface MarketAnalysis {
 }
 
 /**
- * Metadata included in every response
+ * Response from the event-analysis-agent endpoint
  */
-export interface ResponseMetadata {
-  /** Unique identifier for this request */
-  requestId: string;
-  /** ISO timestamp of the response */
-  timestamp: string;
-  /** Event ticker analyzed */
-  eventTicker: string;
-  /** Number of markets found for the event */
-  marketsCount: number;
-  /** Question asked about the event */
-  question: string;
-  /** Total processing time in milliseconds */
-  processingTimeMs: number;
-  /** Grok model used for analysis */
-  grokModel?: string;
-  /** Total tokens consumed by Grok */
-  grokTokensUsed?: number;
-}
-
-/**
- * Response from the analyze-market endpoint
- */
-export interface AnalyzeMarketResponse {
+export interface EventAnalysisAgentResponse {
   /** Whether the request was successful */
   success: boolean;
   /** Analysis result (only present on success) */
   data?: MarketAnalysis;
-  /** Request metadata */
-  metadata: ResponseMetadata;
-  /** Direct URL to the market (only present on success) */
-  "pm-market-url"?: string;
   /** Error message (only present on failure) */
   error?: string;
+  /** Request metadata */
+  metadata: {
+    requestId: string;
+    timestamp: string;
+    processingTimeMs: number;
+    model: string;
+    tokensUsed?: number;
+  };
 }
 

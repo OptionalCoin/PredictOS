@@ -79,7 +79,6 @@ const TerminalInput = ({ onSubmit, isLoading, shouldClear }: TerminalInputProps)
   const [messageIndex, setMessageIndex] = useState(0);
   const [selectedModel, setSelectedModel] = useState<AIModel>("grok-4-1-fast-reasoning");
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
-  const [selectedDataProvider, setSelectedDataProvider] = useState<DataProvider>("dome");
   const prevShouldClear = useRef(shouldClear);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
@@ -138,8 +137,8 @@ const TerminalInput = ({ onSubmit, isLoading, shouldClear }: TerminalInputProps)
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (input.trim() && !isLoading) {
-      // For Polymarket, always use dome. For Kalshi, use the selected provider
-      const provider = detectedUrlType === 'polymarket' ? 'dome' : selectedDataProvider;
+      // For Kalshi use dflow, for Polymarket use dome
+      const provider = detectedUrlType === 'kalshi' ? 'dflow' : 'dome';
       onSubmit(input.trim(), selectedModel, provider);
     }
   };
@@ -269,39 +268,16 @@ const TerminalInput = ({ onSubmit, isLoading, shouldClear }: TerminalInputProps)
           </button>
         </div>
         
-        {/* Data Provider Toggle - Bottom Right */}
+        {/* Data Provider Badge - Bottom Right */}
         {detectedUrlType !== 'none' && (
           <div className="absolute bottom-1 right-4 flex items-center gap-1">
             {detectedUrlType === 'kalshi' ? (
-              // Toggle for Kalshi - can switch between Dome and DFlow
-              <div className="flex items-center bg-secondary/50 rounded-md border border-border/50 overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => setSelectedDataProvider('dome')}
-                  disabled={isLoading}
-                  className={`px-2 py-0.5 text-[10px] font-mono transition-all ${
-                    selectedDataProvider === 'dome'
-                      ? 'bg-cyan-500/20 text-cyan-400 border-r border-cyan-500/30'
-                      : 'text-muted-foreground hover:text-foreground border-r border-border/50'
-                  }`}
-                >
-                  Dome
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedDataProvider('dflow')}
-                  disabled={isLoading}
-                  className={`px-2 py-0.5 text-[10px] font-mono transition-all ${
-                    selectedDataProvider === 'dflow'
-                      ? 'bg-violet-500/20 text-violet-400'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  DFlow
-                </button>
-              </div>
+              // Static badge for Kalshi - uses DFlow
+              <span className="px-2 py-0.5 text-[10px] font-mono bg-violet-500/20 text-violet-400 rounded-md border border-violet-500/30">
+                DFlow
+              </span>
             ) : (
-              // Static badge for Polymarket - only Dome is supported
+              // Static badge for Polymarket - uses Dome
               <span className="px-2 py-0.5 text-[10px] font-mono bg-cyan-500/20 text-cyan-400 rounded-md border border-cyan-500/30">
                 Dome
               </span>

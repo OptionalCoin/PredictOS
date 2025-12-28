@@ -25,6 +25,7 @@ export async function getPolymarketMarkets(
     active?: boolean;
     closed?: boolean;
     market_slug?: string;
+    slug?: string;
   }
 ): Promise<PolymarketMarketsResponse> {
   return request<PolymarketMarketsResponse>('/polymarket/markets', {

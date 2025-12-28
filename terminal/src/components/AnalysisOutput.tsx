@@ -1,16 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { TrendingUp, TrendingDown, Minus, BarChart3 } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, BarChart3, Twitter, Globe, BookOpen, ExternalLink } from "lucide-react";
 import type { MarketAnalysis } from "@/types/api";
+import type { PolyfactualResearchResult } from "@/types/agentic";
 
 interface AnalysisOutputProps {
   analysis: MarketAnalysis;
   timestamp: Date;
   marketUrl?: string;
+  polyfactualResearch?: PolyfactualResearchResult;
 }
 
-const AnalysisOutput = ({ analysis, timestamp, marketUrl }: AnalysisOutputProps) => {
+const AnalysisOutput = ({ analysis, timestamp, marketUrl, polyfactualResearch }: AnalysisOutputProps) => {
   const [displayedLines, setDisplayedLines] = useState<number>(0);
   
   const getVerdict = (): "bullish" | "bearish" | "neutral" => {
@@ -40,6 +42,11 @@ const AnalysisOutput = ({ analysis, timestamp, marketUrl }: AnalysisOutputProps)
       { type: "answer", content: analysis.questionAnswer },
       { type: "divider", content: "─".repeat(50) },
     ] : []),
+    ...(analysis.reasoning ? [
+      { type: "section", content: "REASONING:" },
+      { type: "reasoning", content: analysis.reasoning },
+      { type: "divider", content: "─".repeat(50) },
+    ] : []),
     { type: "section", content: "KEY FACTORS:" },
     ...analysis.keyFactors.map(f => ({ type: "factor", content: `• ${f}` })),
     { type: "divider", content: "─".repeat(50) },
@@ -48,6 +55,29 @@ const AnalysisOutput = ({ analysis, timestamp, marketUrl }: AnalysisOutputProps)
     { type: "divider", content: "─".repeat(50) },
     { type: "recommendation-label", content: "SUMMARY:" },
     { type: "recommendation", content: analysis.analysisSummary },
+    ...(analysis.xSources && analysis.xSources.length > 0 ? [
+      { type: "divider", content: "─".repeat(50) },
+      { type: "section", content: "X SOURCES:" },
+      ...analysis.xSources.map(url => ({ type: "x-source", content: url })),
+    ] : []),
+    ...(analysis.webSources && analysis.webSources.length > 0 ? [
+      { type: "divider", content: "─".repeat(50) },
+      { type: "section", content: "WEB SOURCES:" },
+      ...analysis.webSources.map(url => ({ type: "web-source", content: url })),
+    ] : []),
+    ...(polyfactualResearch ? [
+      { type: "divider", content: "─".repeat(50) },
+      { type: "polyfactual-header", content: "POLYFACTUAL RESEARCH:" },
+      { type: "polyfactual-answer", content: polyfactualResearch.answer },
+      ...(polyfactualResearch.citations && polyfactualResearch.citations.length > 0 ? [
+        { type: "polyfactual-citations-label", content: "Citations:" },
+        ...polyfactualResearch.citations.map(citation => ({ 
+          type: "polyfactual-citation", 
+          content: citation.url || citation.title || 'Unknown source',
+          title: citation.title,
+        })),
+      ] : []),
+    ] : []),
   ];
 
   useEffect(() => {
@@ -109,12 +139,26 @@ const AnalysisOutput = ({ analysis, timestamp, marketUrl }: AnalysisOutputProps)
         return `${getVerdictColor()} font-bold text-xl`;
       case "answer":
         return "text-secondary-foreground pl-2 whitespace-pre-wrap";
+      case "reasoning":
+        return "text-secondary-foreground pl-2 whitespace-pre-wrap leading-relaxed";
       case "factor":
         return "text-secondary-foreground pl-2";
       case "risk":
         return "text-warning/80 pl-2";
       case "recommendation":
         return "text-foreground font-medium";
+      case "x-source":
+        return "text-cyan-400 pl-2 hover:underline cursor-pointer";
+      case "web-source":
+        return "text-emerald-400 pl-2 hover:underline cursor-pointer";
+      case "polyfactual-header":
+        return "text-violet-400 font-semibold mt-2 flex items-center gap-2";
+      case "polyfactual-answer":
+        return "text-secondary-foreground pl-2 whitespace-pre-wrap mt-1";
+      case "polyfactual-citations-label":
+        return "text-violet-400/80 text-xs mt-2 pl-2";
+      case "polyfactual-citation":
+        return "text-violet-400 pl-4 hover:underline cursor-pointer text-sm";
       default:
         return "text-foreground";
     }
@@ -141,7 +185,40 @@ const AnalysisOutput = ({ analysis, timestamp, marketUrl }: AnalysisOutputProps)
         {allLines.slice(0, displayedLines).map((line, index) => (
           <div key={index} className={`${getLineStyle(line.type)} ${line.type === "verdict" ? "flex items-center gap-2" : ""}`}>
             {line.type === "verdict" && getVerdictIcon()}
-            {line.content}
+            {line.type === "polyfactual-header" && <BookOpen className="w-4 h-4" />}
+            {line.type === "x-source" ? (
+              <a 
+                href={line.content} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 hover:underline"
+              >
+                <Twitter className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate">{line.content}</span>
+              </a>
+            ) : line.type === "web-source" ? (
+              <a 
+                href={line.content} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 hover:underline"
+              >
+                <Globe className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate">{line.content}</span>
+              </a>
+            ) : line.type === "polyfactual-citation" ? (
+              <a 
+                href={line.content.startsWith('http') ? line.content : '#'} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 hover:underline"
+              >
+                <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate">{'title' in line && line.title ? line.title : line.content}</span>
+              </a>
+            ) : (
+              line.content
+            )}
           </div>
         ))}
         {displayedLines < allLines.length && (

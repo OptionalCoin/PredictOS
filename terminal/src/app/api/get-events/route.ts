@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import type { AnalyzeMarketRequest, AnalyzeMarketResponse } from "@/types/api";
+import type { GetEventsRequest, GetEventsResponse } from "@/types/agentic";
 
 /**
- * Server-side API route to proxy requests to the Supabase Edge Function.
- * This keeps the Supabase URL and keys secure on the server.
+ * Server-side API route to proxy requests to the get-events Edge Function.
  */
 export async function POST(request: NextRequest) {
   try {
-    // Read environment variables server-side
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
@@ -21,10 +19,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse request body
-    const body: AnalyzeMarketRequest = await request.json();
+    const body: GetEventsRequest = await request.json();
 
-    // Validate required fields
     if (!body.url) {
       return NextResponse.json(
         {
@@ -35,25 +31,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!body.question) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Missing required field: question",
-        },
-        { status: 400 }
-      );
-    }
-
-    // Auto-detect pmType based on URL if not provided
-    const pmType = body.pmType || (body.url.includes("kalshi.com") ? "Kalshi" : "Polymarket");
-
     // Determine data provider based on URL: Kalshi → dflow, Polymarket → dome
-    const dataProvider = pmType === "Kalshi" ? "dflow" : "dome";
+    const isKalshi = body.url.toLowerCase().includes("kalshi");
+    const dataProvider = isKalshi ? "dflow" : "dome";
 
-    // Call the Supabase Edge Function
-    const edgeFunctionUrl = process.env.SUPABASE_EDGE_FUNCTION_ANALYZE_EVENT_MARKETS 
-      || `${supabaseUrl}/functions/v1/analyze-event-markets`;
+    const edgeFunctionUrl = process.env.SUPABASE_EDGE_FUNCTION_GET_EVENTS 
+      || `${supabaseUrl}/functions/v1/get-events`;
     
     const response = await fetch(edgeFunctionUrl, {
       method: "POST",
@@ -64,18 +47,15 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         url: body.url,
-        question: body.question,
-        pmType,
-        model: body.model,
         dataProvider,
       }),
     });
 
-    const data: AnalyzeMarketResponse = await response.json();
+    const data: GetEventsResponse = await response.json();
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error("Error in analyze-event-markets API route:", error);
+    console.error("Error in get-events API route:", error);
     return NextResponse.json(
       {
         success: false,

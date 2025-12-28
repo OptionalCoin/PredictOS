@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import type { AnalyzeMarketRequest, AnalyzeMarketResponse } from "@/types/api";
+import type { AnalysisAggregatorRequest, AnalysisAggregatorResponse } from "@/types/agentic";
 
 /**
- * Server-side API route to proxy requests to the Supabase Edge Function.
- * This keeps the Supabase URL and keys secure on the server.
+ * Server-side API route to proxy requests to the bookmaker-agent Edge Function.
  */
 export async function POST(request: NextRequest) {
   try {
-    // Read environment variables server-side
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
@@ -21,39 +19,51 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse request body
-    const body: AnalyzeMarketRequest = await request.json();
+    const body: AnalysisAggregatorRequest = await request.json();
 
     // Validate required fields
-    if (!body.url) {
+    if (!body.analyses || !Array.isArray(body.analyses) || body.analyses.length < 2) {
       return NextResponse.json(
         {
           success: false,
-          error: "Missing required field: url",
+          error: "Missing required field: analyses (must have at least 2)",
         },
         { status: 400 }
       );
     }
 
-    if (!body.question) {
+    if (!body.eventIdentifier) {
       return NextResponse.json(
         {
           success: false,
-          error: "Missing required field: question",
+          error: "Missing required field: eventIdentifier",
         },
         { status: 400 }
       );
     }
 
-    // Auto-detect pmType based on URL if not provided
-    const pmType = body.pmType || (body.url.includes("kalshi.com") ? "Kalshi" : "Polymarket");
+    if (!body.pmType) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Missing required field: pmType",
+        },
+        { status: 400 }
+      );
+    }
 
-    // Determine data provider based on URL: Kalshi → dflow, Polymarket → dome
-    const dataProvider = pmType === "Kalshi" ? "dflow" : "dome";
+    if (!body.model) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Missing required field: model",
+        },
+        { status: 400 }
+      );
+    }
 
-    // Call the Supabase Edge Function
-    const edgeFunctionUrl = process.env.SUPABASE_EDGE_FUNCTION_ANALYZE_EVENT_MARKETS 
-      || `${supabaseUrl}/functions/v1/analyze-event-markets`;
+    const edgeFunctionUrl = process.env.SUPABASE_EDGE_FUNCTION_BOOKMAKER_AGENT 
+      || `${supabaseUrl}/functions/v1/bookmaker-agent`;
     
     const response = await fetch(edgeFunctionUrl, {
       method: "POST",
@@ -63,19 +73,18 @@ export async function POST(request: NextRequest) {
         apikey: supabaseAnonKey,
       },
       body: JSON.stringify({
-        url: body.url,
-        question: body.question,
-        pmType,
+        analyses: body.analyses,
+        eventIdentifier: body.eventIdentifier,
+        pmType: body.pmType,
         model: body.model,
-        dataProvider,
       }),
     });
 
-    const data: AnalyzeMarketResponse = await response.json();
+    const data: AnalysisAggregatorResponse = await response.json();
 
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error("Error in analyze-event-markets API route:", error);
+    console.error("Error in bookmaker-agent API route:", error);
     return NextResponse.json(
       {
         success: false,
