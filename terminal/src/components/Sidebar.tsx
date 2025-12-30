@@ -259,7 +259,7 @@ export function Sidebar({ activeTab }: SidebarProps) {
           
           {/* Version Tag */}
           <span className="text-[10px] px-2 py-0.5 rounded bg-success/20 text-success border border-success font-mono font-bold">
-            v2.0.0
+            v2.1.0
           </span>
         </div>
       </div>

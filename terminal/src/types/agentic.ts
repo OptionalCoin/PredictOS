@@ -146,6 +146,49 @@ export interface PolyfactualResearchResult {
   query: string;
 }
 
+/** Irys upload status for verifiable analysis */
+export interface IrysUploadStatus {
+  status: 'idle' | 'uploading' | 'success' | 'error';
+  transactionId?: string;
+  gatewayUrl?: string;
+  error?: string;
+}
+
+/** Individual agent data for combined Irys upload */
+export interface IrysAgentData {
+  name: string;
+  type: 'predict-agent' | 'bookmaker-agent' | 'mapper-agent' | 'execution';
+  model?: string;
+  tools?: AgentTool[];
+  userCommand?: string;
+  analysis?: MarketAnalysis | AggregatedAnalysis;
+  polyfactualResearch?: PolyfactualResearchResult;
+  /** For mapper agent */
+  orderParams?: Record<string, unknown>;
+  /** For execution */
+  executionResult?: {
+    status: 'success' | 'error' | 'skipped';
+    orderId?: string;
+    side?: string;
+    size?: number;
+    price?: number;
+    costUsd?: number;
+    errorMsg?: string;
+  };
+}
+
+/** Combined Irys upload payload for all agents */
+export interface IrysCombinedUploadPayload {
+  requestId: string;
+  timestamp: string;
+  pmType: PmType;
+  eventIdentifier: string;
+  eventId?: string;
+  analysisMode: 'supervised' | 'autonomous';
+  agentsData: IrysAgentData[];
+  schemaVersion: string;
+}
+
 export interface AgentConfig {
   id: string;
   model: string;

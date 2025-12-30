@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { 
+import {
   Link2, 
   Plus, 
   Play, 
@@ -24,6 +24,8 @@ import {
   Coins,
   DollarSign,
   AlertCircle,
+  ShieldCheck,
+  Upload,
 } from "lucide-react";
 import Image from "next/image";
 import type { 
@@ -37,7 +39,10 @@ import type {
   GrokTool,
   AgentTool,
   PolyfactualResearchResult,
+  IrysUploadStatus,
+  IrysAgentData,
 } from "@/types/agentic";
+import { generateRequestId, formatCombinedAnalysisForUpload, type IrysUploadResult } from "@/lib/irys";
 import type { PolyfactualResearchResponse } from "@/types/polyfactual";
 import AnalysisOutput from "./AnalysisOutput";
 import AggregatedAnalysisOutput from "./AggregatedAnalysisOutput";
@@ -112,6 +117,9 @@ const AgenticMarketAnalysis = () => {
   // Analysis mode state (supervised = shows OkBet link, autonomous = no OkBet link)
   const [analysisMode, setAnalysisMode] = useState<AnalysisMode>('supervised');
   
+  // Irys session request ID (generated once per analysis run for tracking)
+  const [irysRequestId, setIrysRequestId] = useState<string>("");
+  
   // Event data state
   const [eventData, setEventData] = useState<{
     eventIdentifier: string;
@@ -130,6 +138,10 @@ const AgenticMarketAnalysis = () => {
     model: "",
     status: 'idle'
   });
+  
+  // Global verifiable state (applies to all agents)
+  const [verifiable, setVerifiable] = useState(false);
+  const [irysUploadStatus, setIrysUploadStatus] = useState<IrysUploadStatus>({ status: 'idle' });
   
   // UI state
   const [isLoadingEvents, setIsLoadingEvents] = useState(false);
@@ -150,6 +162,8 @@ const AgenticMarketAnalysis = () => {
     costUsd?: number;
     errorMsg?: string;
   } | null>(null);
+  // Mapper agent data for Irys upload (in autonomous mode)
+  const [mapperAgentData, setMapperAgentData] = useState<Record<string, unknown> | null>(null);
   
   const dropdownRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   
@@ -210,6 +224,115 @@ const AgenticMarketAnalysis = () => {
       ...prev,
       { id: generateAgentId(), model: "", tools: undefined, userCommand: "", status: 'idle' }
     ]);
+  };
+
+  /**
+   * Upload all agents' data to Irys for permanent verification
+   */
+  const uploadCombinedToIrys = async (
+    completedAgents: AgentConfig[],
+    aggregatorResult: AggregatorConfig | null,
+    mapperData: Record<string, unknown> | null,
+    orderResult: typeof autonomousOrderResult,
+    orderStatus: typeof autonomousOrderStatus,
+    eventInfo: { pmType: PmType; eventIdentifier: string; eventId?: string },
+    requestId: string,
+    mode: AnalysisMode
+  ) => {
+    setIrysUploadStatus({ status: 'uploading' });
+
+    try {
+      // Build agents data array
+      const agentsData: IrysAgentData[] = [];
+
+      // Add Predict Agents
+      completedAgents.forEach((agent, index) => {
+        if (agent.status === 'completed' && agent.result) {
+          agentsData.push({
+            name: `Predict Agent ${index + 1}`,
+            type: 'predict-agent',
+            model: agent.model,
+            tools: agent.tools,
+            userCommand: agent.userCommand,
+            analysis: agent.result,
+            polyfactualResearch: agent.polyfactualResearch,
+          });
+        }
+      });
+
+      // Add Bookmaker Agent if aggregator completed
+      if (aggregatorResult && aggregatorResult.status === 'completed' && aggregatorResult.result) {
+        agentsData.push({
+          name: 'Predict Bookmaker Agent',
+          type: 'bookmaker-agent',
+          model: aggregatorResult.model,
+          analysis: aggregatorResult.result,
+        });
+      }
+
+      // Add Mapper Agent and Execution (in autonomous mode)
+      if (mode === 'autonomous') {
+        if (mapperData) {
+          agentsData.push({
+            name: 'Mapper Agent',
+            type: 'mapper-agent',
+            orderParams: mapperData,
+          });
+        }
+
+        if (orderStatus !== 'idle') {
+          agentsData.push({
+            name: 'Autonomous Execution',
+            type: 'execution',
+            executionResult: {
+              status: orderStatus === 'success' ? 'success' : orderStatus === 'skipped' ? 'skipped' : 'error',
+              orderId: orderResult?.orderId,
+              side: orderResult?.side,
+              size: orderResult?.size,
+              price: orderResult?.price,
+              costUsd: orderResult?.costUsd,
+              errorMsg: orderResult?.errorMsg,
+            },
+          });
+        }
+      }
+
+      const payload = formatCombinedAnalysisForUpload(agentsData, {
+        requestId,
+        pmType: eventInfo.pmType,
+        eventIdentifier: eventInfo.eventIdentifier,
+        eventId: eventInfo.eventId,
+        analysisMode: mode,
+      });
+
+      console.log(`[Irys] Uploading combined data for ${agentsData.length} agents`);
+
+      const response = await fetch("/api/irys-upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result: IrysUploadResult = await response.json();
+
+      if (result.success && result.transactionId) {
+        setIrysUploadStatus({
+          status: 'success',
+          transactionId: result.transactionId,
+          gatewayUrl: result.gatewayUrl,
+        });
+        console.log(`[Irys] Combined analysis uploaded: ${result.gatewayUrl}`);
+      } else {
+        throw new Error(result.error || "Upload failed");
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "Unknown error";
+      console.error(`[Irys] Failed to upload combined analysis:`, error);
+      setIrysUploadStatus({
+        status: 'error',
+        error: errorMsg,
+      });
+    }
   };
 
   const updateAgentCommand = (agentId: string, command: string) => {
@@ -309,11 +432,18 @@ const AgenticMarketAnalysis = () => {
     setExpandedAgents(new Set());
     setExpandedAggregator(false);
     
+    // Generate a new request ID for this analysis session (used for Irys uploads)
+    const newRequestId = generateRequestId();
+    setIrysRequestId(newRequestId);
+    console.log(`[Analysis] Starting with request ID: ${newRequestId}`);
+    
     // Reset all statuses
     setAgents(prev => prev.map(a => ({ ...a, status: 'idle', result: undefined, error: undefined })));
     setAggregator(prev => ({ ...prev, status: 'idle', result: undefined, error: undefined }));
     setAutonomousOrderStatus('idle');
     setAutonomousOrderResult(null);
+    setMapperAgentData(null);
+    setIrysUploadStatus({ status: 'idle' });
 
     try {
       // Step 1: Fetch event data
@@ -484,6 +614,45 @@ const AgenticMarketAnalysis = () => {
         );
       }
 
+      // Upload to Irys if verifiable is enabled
+      // Note: We need to get the latest state values after all updates
+      if (verifiable) {
+        // Small delay to ensure state updates have propagated
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Get current state values for upload
+        setAgents(currentAgents => {
+          setAggregator(currentAggregator => {
+            setAutonomousOrderStatus(currentOrderStatus => {
+              setAutonomousOrderResult(currentOrderResult => {
+                setMapperAgentData(currentMapperData => {
+                  // Trigger upload with current state
+                  uploadCombinedToIrys(
+                    currentAgents,
+                    currentAggregator,
+                    currentMapperData,
+                    currentOrderResult,
+                    currentOrderStatus,
+                    { 
+                      pmType: eventsData.pmType!, 
+                      eventIdentifier: eventsData.eventIdentifier!,
+                      eventId: eventsData.eventId 
+                    },
+                    newRequestId,
+                    analysisMode
+                  );
+                  return currentMapperData;
+                });
+                return currentOrderResult;
+              });
+              return currentOrderStatus;
+            });
+            return currentAggregator;
+          });
+          return currentAgents;
+        });
+      }
+
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unexpected error occurred");
     } finally {
@@ -562,6 +731,9 @@ const AgenticMarketAnalysis = () => {
       }
 
       console.log("Mapper Agent response:", mapperData.data?.orderParams);
+
+      // Store mapper data for Irys upload
+      setMapperAgentData(mapperData.data?.orderParams || null);
 
       // Step 2: Call polymarket-put-order with mapper output
       console.log("Placing order via polymarket-put-order...");
@@ -1059,6 +1231,24 @@ const AgenticMarketAnalysis = () => {
                 <h3 className={`font-display text-sm transition-colors ${
                   isRunning ? 'text-primary' : 'text-muted-foreground'
                 }`}>PREDICT AGENTS</h3>
+                
+                {/* Verifiable Checkbox */}
+                <button
+                  type="button"
+                  onClick={() => !isRunning && setVerifiable(!verifiable)}
+                  disabled={isRunning}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-[10px] font-mono transition-all ${
+                    verifiable
+                      ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/30'
+                      : 'bg-secondary/30 border-border/50 text-muted-foreground hover:border-emerald-500/30 hover:text-emerald-400/70'
+                  } ${isRunning ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  title={verifiable ? "Analysis will be uploaded to Irys for permanent verification" : "Enable to upload analysis to Irys blockchain"}
+                >
+                  <ShieldCheck className={`w-3.5 h-3.5 ${verifiable ? 'text-emerald-400' : 'text-muted-foreground'}`} />
+                  <span>Verifiable</span>
+                  {verifiable && <CheckCircle2 className="w-3 h-3 text-emerald-400" />}
+                </button>
+                
                 {/* Mode Toggle */}
                 <div className="flex items-center bg-secondary/50 rounded-md border border-border/50 overflow-hidden">
                   <button
@@ -1872,6 +2062,95 @@ const AgenticMarketAnalysis = () => {
               )}
             </div>
           </button>
+
+          {/* Irys Verification Footer - Shows when verifiable is enabled */}
+          {verifiable && (
+            <div className={`mt-6 p-4 rounded-lg border transition-all ${
+              irysUploadStatus.status === 'success'
+                ? 'bg-emerald-500/10 border-emerald-500/50'
+                : irysUploadStatus.status === 'uploading'
+                ? 'bg-blue-500/10 border-blue-500/30'
+                : irysUploadStatus.status === 'error'
+                ? 'bg-destructive/10 border-destructive/30'
+                : 'bg-secondary/30 border-border/50'
+            }`}>
+              <div className="flex items-center gap-3 mb-2">
+                <ShieldCheck className={`w-5 h-5 ${
+                  irysUploadStatus.status === 'success' ? 'text-emerald-400' :
+                  irysUploadStatus.status === 'uploading' ? 'text-blue-400' :
+                  irysUploadStatus.status === 'error' ? 'text-destructive' :
+                  'text-muted-foreground'
+                }`} />
+                <h4 className={`font-display text-sm ${
+                  irysUploadStatus.status === 'success' ? 'text-emerald-400' :
+                  irysUploadStatus.status === 'uploading' ? 'text-blue-400' :
+                  irysUploadStatus.status === 'error' ? 'text-destructive' :
+                  'text-muted-foreground'
+                }`}>
+                  Verifiable Analysis on Irys
+                </h4>
+                {irysUploadStatus.status === 'uploading' && (
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-blue-500/20 border border-blue-500/40">
+                    <Upload className="w-3 h-3 text-blue-400 animate-pulse" />
+                    <span className="text-[10px] font-display text-blue-400 typing-dots">Uploading</span>
+                  </div>
+                )}
+                {irysUploadStatus.status === 'success' && (
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                    <span className="text-[10px] font-display text-emerald-400">Verified</span>
+                  </div>
+                )}
+                {irysUploadStatus.status === 'error' && (
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-destructive/20 border border-destructive/40">
+                    <XCircle className="w-3 h-3 text-destructive" />
+                    <span className="text-[10px] font-display text-destructive">Failed</span>
+                  </div>
+                )}
+              </div>
+
+              {irysUploadStatus.status === 'idle' && (
+                <p className="text-xs text-muted-foreground">
+                  Analysis data will be permanently uploaded to Irys blockchain after completion.
+                </p>
+              )}
+
+              {irysUploadStatus.status === 'uploading' && (
+                <p className="text-xs text-blue-400/80">
+                  Uploading all agents&apos; analysis data to Irys for permanent verification...
+                </p>
+              )}
+
+              {irysUploadStatus.status === 'success' && irysUploadStatus.gatewayUrl && (
+                <div className="space-y-3">
+                  <p className="text-xs text-emerald-400/80">
+                    Analysis data has been permanently stored on Irys blockchain.
+                  </p>
+                  <a
+                    href={irysUploadStatus.gatewayUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-3 rounded-md bg-emerald-500/15 border border-emerald-500/50 text-emerald-300 text-sm font-mono hover:bg-emerald-500/25 hover:border-emerald-400 hover:text-emerald-200 transition-all group"
+                  >
+                    <ExternalLink className="w-4 h-4 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                    <span className="truncate">{irysUploadStatus.gatewayUrl}</span>
+                    <ArrowDown className="w-3 h-3 ml-auto rotate-[-90deg] group-hover:translate-x-1 transition-transform" />
+                  </a>
+                  {irysUploadStatus.transactionId && (
+                    <p className="text-[10px] text-muted-foreground font-mono">
+                      Transaction ID: {irysUploadStatus.transactionId}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {irysUploadStatus.status === 'error' && (
+                <p className="text-xs text-destructive">
+                  Failed to upload: {irysUploadStatus.error}
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
