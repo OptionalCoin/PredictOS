@@ -133,7 +133,19 @@ export interface AnalysisAggregatorResponse {
 export type GrokTool = 'x_search' | 'web_search';
 
 /** Tool types available for all agents (includes non-Grok tools) */
-export type AgentTool = GrokTool | 'polyfactual';
+export type AgentTool = GrokTool | 'polyfactual' | 'x402';
+
+/** PayAI seller info for agent configuration */
+export interface X402SellerConfig {
+  /** Seller ID (resource URL) */
+  id: string;
+  /** Seller display name */
+  name: string;
+  /** Price per call */
+  priceUsdc: string;
+  /** Network to use */
+  network: string;
+}
 
 /** Polyfactual research result to be appended to analysis */
 export interface PolyfactualResearchResult {
@@ -157,12 +169,23 @@ export interface IrysUploadStatus {
 /** Individual agent data for combined Irys upload */
 export interface IrysAgentData {
   name: string;
-  type: 'predict-agent' | 'bookmaker-agent' | 'mapper-agent' | 'execution';
+  type: 'predict-agent' | 'bookmaker-agent' | 'mapper-agent' | 'execution' | 'x402-agent';
   model?: string;
   tools?: AgentTool[];
   userCommand?: string;
   analysis?: MarketAnalysis | AggregatedAnalysis;
   polyfactualResearch?: PolyfactualResearchResult;
+  /** For x402 agents */
+  x402Result?: {
+    seller: X402SellerConfig;
+    query: string;
+    response: unknown;
+    payment?: {
+      txId?: string;
+      cost?: string;
+      network: string;
+    };
+  };
   /** For mapper agent */
   orderParams?: Record<string, unknown>;
   /** For execution */
@@ -195,6 +218,18 @@ export interface AgentConfig {
   tools?: AgentTool[];
   /** Optional user command to prioritize in the analysis */
   userCommand?: string;
+  /** PayAI seller configuration (when x402 tool is selected) */
+  x402Seller?: X402SellerConfig;
+  /** x402 response data */
+  x402Result?: {
+    response: unknown;
+    query: string;
+    payment?: {
+      txId?: string;
+      cost?: string;
+      network: string;
+    };
+  };
   status: 'idle' | 'running' | 'completed' | 'error';
   result?: MarketAnalysis;
   polyfactualResearch?: PolyfactualResearchResult;
