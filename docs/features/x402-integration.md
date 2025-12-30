@@ -36,6 +36,14 @@ PredictOS connects to the **PayAI Bazaar** — a discovery layer that indexes al
 - See input/output schemas
 - Select a seller to use as an agent tool
 
+> ⚠️ **Important: No Vetting Process**
+> 
+> Sellers listed in the PayAI Bazaar are **not vetted or verified** by PayAI or PredictOS. Anyone can register a seller endpoint and have it appear in the discovery layer. **Always research a seller before sending them money** — check their website, documentation, reputation, and ensure they are legitimate before using their service.
+
+> 💡 **Note: Seller-Specific Input Formats**
+> 
+> Each seller may accept **different query formats and parameters**. While PredictOS sends your agent's command as the query input, some sellers expect JSON objects with specific fields, while others accept plain text queries. **Check the seller's documentation or website** to understand what input format they expect for best results.
+
 ### Using x402 as an Agent Tool
 
 In **Super Intelligence**, you can add x402 sellers as tools for your Predict Agents:
@@ -354,6 +362,8 @@ Cost: $0.10 per call
 4. **Monitor spending** — payments are automatic when agents call sellers
 5. **Review seller prices** before adding them as tools
 6. **Start with small amounts** — fund wallets with only what you need
+7. **Research sellers before use** — sellers are NOT vetted; verify legitimacy through their website, docs, and community reputation before sending any funds
+8. **Check seller input formats** — each seller may expect different query formats; consult their documentation to avoid wasted payments on malformed requests
 
 ## Links
 

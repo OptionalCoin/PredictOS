@@ -363,6 +363,9 @@ export default function X402SellerModal({
             PayAI sellers are paid services. Your command will be sent as the
             query input. Search filters results on the current page only.
           </p>
+          <p className="text-[10px] text-amber-400/70 text-center mt-1">
+            ⚠️ Sellers are not vetted. Research before sending funds.
+          </p>
         </div>
       </div>
     </div>
