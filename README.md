@@ -103,14 +103,16 @@ Predict Super Intelligence operates through a sophisticated **agent pipeline**:
 - **Real-Time Pipeline Visualization** — Watch agents work through the analysis pipeline
 - **Consensus Metrics** — See how agents agree or disagree on recommendations
 - **Budget Controls** — Set strict limits for autonomous execution (\$1-\$100)
+- **🛡️ Verifiable Agents** — Permanently store agent analysis on [Irys](https://irys.xyz/) blockchain for transparent, verifiable AI predictions
 
 > 📖 **[Full Setup Guide →](docs/features/super-intelligence.md)**
 
-## 🎯 Current Features (v2.0.0)
+## 🎯 Current Features (v2.1.0)
 
 | Feature | Status | Description | Setup Guide |
 |---------|--------|-------------|-------------|
 | **🧠 Super Intelligence** | ✅ Released | Multi-agent AI system with Supervised and Autonomous modes. Deploy multiple AI agents with different models and tools, aggregate insights via Bookmaker Agent, and execute trades automatically or via OkBet. Includes AI-powered market analysis and Polyfactual Deep Research. | [📖 Setup Guide](docs/features/super-intelligence.md) |
+| **🛡️ Verifiable Agents** | ✅ Released | Permanently store agent analysis on [Irys](https://irys.xyz/) blockchain for transparent, verifiable AI predictions. Supports both devnet (free, temporary) and mainnet (permanent). | [📖 Setup Guide](docs/features/verifiable-agents.md) |
 | **Betting Bots** | ✅ Released | Polymarket 15 Minute Up/Down Arbitrage Bot — **Vanilla Mode** (single price straddle) and **Ladder Mode** (multi-level tapered allocation for maximized fill rates) | [📖 Setup Guide](docs/features/betting-bots.md) |
 | **Wallet Tracking** | ✅ Released | Real-time order tracking for any Polymarket wallets using Dome SDK WebSockets — 10 seconds faster than hosted bots | [📖 Setup Guide](docs/features/wallet-tracking.md) |
 
@@ -151,6 +153,7 @@ PredictOS/
 │   │   │   │   ├── bookmaker-agent/
 │   │   │   │   ├── event-analysis-agent/
 │   │   │   │   ├── get-events/
+│   │   │   │   ├── irys-upload/        # Verifiable Agents - Irys blockchain upload
 │   │   │   │   ├── mapper-agent/
 │   │   │   │   ├── polyfactual-research/
 │   │   │   │   ├── polymarket-put-order/
@@ -162,6 +165,9 @@ PredictOS/
 │   │   │   ├── AgenticMarketAnalysis.tsx   # Super Intelligence component
 │   │   │   ├── BettingBotTerminal.tsx
 │   │   │   └── WalletTrackingTerminal.tsx
+│   │   ├── lib/                     # Utility libraries
+│   │   │   ├── irys.ts              # Irys blockchain integration
+│   │   │   └── utils.ts
 │   │   └── types/                   # TypeScript definitions
 │   └── public/                      # Static assets
 │
@@ -324,6 +330,7 @@ Your PredictOS terminal will be running at [http://localhost:3000](http://localh
 - [Dome API](https://domeapi.io/) — Polymarket data & trading
 - [xAI Grok](https://x.ai/) — xAI's reasoning models (Grok 4, Grok 4.1)
 - [OpenAI GPT](https://openai.com/) — OpenAI's language models (GPT-4.1, GPT-5)
+- [Irys](https://irys.xyz/) — Permanent blockchain storage for Verifiable Agents
 
 ## 🤝 Partners
 
@@ -364,8 +371,8 @@ Your PredictOS terminal will be running at [http://localhost:3000](http://localh
     <td>
       <h3><a href="https://irys.xyz/">IRYS</a></h3>
       <p><strong>The high-performance datachain unifying storage and native smart contract execution.</strong></p>
-      <p>🔗 PredictOS will use IRYS as the data layer for prediction market agents and platforms.</p>
-      <p><a href="https://irys.xyz/">🌐 Website</a> · <a href="https://x.com/irys_xyz">𝕏 Twitter</a></p>
+      <p>🔗 PredictOS integrates IRYS to power <strong>Verifiable Agents</strong> — permanently storing all agent analysis, recommendations, and execution results on the blockchain for transparent, auditable AI predictions. This creates an immutable record of agent decisions that anyone can verify.</p>
+      <p><a href="https://irys.xyz/">🌐 Website</a> · <a href="https://docs.irys.xyz/">📖 Docs</a> · <a href="https://x.com/irys_xyz">𝕏 Twitter</a></p>
     </td>
   </tr>
   <tr>
