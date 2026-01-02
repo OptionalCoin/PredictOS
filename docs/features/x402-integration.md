@@ -1,6 +1,43 @@
 # 💸 x402 / PayAI Integration
 
-**x402 Integration** brings the power of paid AI services and data providers to PredictOS through the [PayAI](https://www.payai.network/) protocol. Discover and call x402-protected endpoints with automatic USDC payments on Solana or Base networks.
+**x402 Integration** brings the power of paid AI services and data providers to PredictOS through the [x402 protocol](https://www.x402.org/). Discover and call x402-protected endpoints with automatic USDC payments on Solana or Base networks.
+
+> ✅ **Status: Fully Integrated**
+> 
+> x402 integration is complete and production-ready. PredictOS supports both **PayAI** and **Coinbase CDP** facilitators interchangeably — simply configure your preferred facilitator URL in the environment variables.
+
+## Buyer Agents vs Seller Agents
+
+PredictOS operates within the x402 ecosystem in two distinct roles:
+
+### 🛒 Buyer Agents (Your Agents)
+
+Agents built with PredictOS are **buyer agents**. They can:
+- Discover and browse x402 sellers from the bazaar
+- Automatically pay for premium information from other AI agents
+- Access specialized data sources, research, and analysis on demand
+- Use x402 sellers as tools during market analysis
+
+When you configure a Predict Agent with a PayAI tool, it becomes a buyer that can pay for premium intel from seller agents across the x402 network.
+
+### 💰 Seller Agents (PredictOS Services)
+
+PredictOS also exposes its own intelligence as a **seller agent** — making PredictOS-powered analysis available to any x402 buyer in the ecosystem.
+
+**Arb Agent** (Arbitrage Discovery Agent) is a seller agent that provides live Polymarket vs Kalshi arbitrage opportunities:
+
+| | |
+|---|---|
+| **Public Endpoint** | `https://nqyocjuqubsdrguazcjz.supabase.co/functions/v1/get-polymarket-kalshi-arbitrage` |
+| **Service** | Live arbitrage opportunities between Polymarket and Kalshi |
+| **Price** | $1 per call |
+| **Network** | Solana |
+| **x402.watch** | [View on x402.watch](https://x402.watch/seller/predictos-live-polymarket-vs-kalshi-arbitrage) |
+| **X (Twitter)** | [@predict_agent](https://x.com/predict_agent) |
+
+> 💡 **Access via x402:** Any x402 buyer agent can call the Arb Agent endpoint directly using the CDP facilitator. Configure your buyer to use `https://api.cdp.coinbase.com/platform/v2/x402` as the facilitator and call the public endpoint above.
+
+---
 
 ## What is x402?
 
@@ -16,36 +53,38 @@ This creates a seamless pay-per-call model for AI services — no subscriptions,
 
 ## Why x402 in PredictOS?
 
-x402 integration unlocks access to a growing ecosystem of paid AI services:
+x402 integration enables your Predict Agents to become intelligent buyers in the AI economy. Your agents can autonomously discover, evaluate, and pay for premium information from seller agents across the network.
 
-- **Premium Data Sources** — Access specialized market data, research, and analysis
-- **AI-to-AI Commerce** — Let your agents pay other AI agents for their expertise
+### Benefits for Your Buyer Agents
+
+- **Premium Intelligence** — Access specialized market data, research, and analysis from x402 sellers
+- **AI-to-AI Commerce** — Your agents pay other AI agents for their expertise automatically
 - **No Vendor Lock-in** — Pay only for what you use, switch providers instantly
 - **Transparent Pricing** — Every seller displays their price upfront in USDC
 - **Multi-Network Support** — Pay with USDC on Solana (fast, cheap) or Base (EVM compatible)
+- **Tool Integration** — Add any x402 seller as a tool for your Predict Agents
 
-## 🚀 Predict Agent on Coinbase's x402 Bazaar
+## 🔄 Interchangeable Facilitators
 
-**Predict Agent** (our arbitrage discovery agent) is live on **Coinbase's CDP Facilitator**! This makes PredictOS one of the first prediction market intelligence tools available through the x402 protocol.
+PredictOS supports **two facilitators** that can be used interchangeably. Simply update your environment variables to switch between them:
 
-| | |
-|---|---|
-| **Seller** | Predict Agent (Arb Agent) |
-| **Service** | Live Polymarket vs Kalshi arbitrage opportunities |
-| **Price** | $1 per call |
-| **Network** | Solana |
-| **x402.watch** | [View on x402.watch](https://x402.watch/seller/predictos-live-polymarket-vs-kalshi-arbitrage) |
-| **X (Twitter)** | [@predict_agent](https://x.com/predict_agent) |
+### PayAI Facilitator
 
-> ⚙️ **Facilitator Configuration**
-> 
-> To use Predict Agent, configure the Coinbase CDP facilitator:
-> ```
-> https://api.cdp.coinbase.com/platform/v2/x402
-> ```
-> PayAI Bazaar listing coming soon!
+```env
+X402_DISCOVERY_URL=https://facilitator.payai.network/discovery/resources
+X402_FACILITATOR_URL=https://facilitator.payai.network/
+```
 
-> 💡 **Use it directly in PredictOS!** In the PayAI Seller Modal, use the **Custom Endpoint** input to call Predict Agent directly with its endpoint URL.
+### Coinbase CDP Facilitator
+
+```env
+X402_DISCOVERY_URL=https://api.cdp.coinbase.com/platform/v2/x402/discovery/resources
+X402_FACILITATOR_URL=https://api.cdp.coinbase.com/platform/v2/x402
+```
+
+Both facilitators provide access to the x402 seller ecosystem. The CDP facilitator is required for accessing Arb Agent and other sellers listed on Coinbase's x402 bazaar.
+
+> 💡 **Use Arb Agent directly in PredictOS!** In the PayAI Seller Modal, use the **Custom Endpoint** input to call the Arb Agent directly with its public endpoint URL.
 
 ---
 
@@ -69,16 +108,18 @@ PredictOS connects to the **PayAI Bazaar** — a discovery layer that indexes al
 > 
 > Each seller may accept **different query formats and parameters**. While PredictOS sends your agent's command as the query input, some sellers expect JSON objects with specific fields, while others accept plain text queries. **Check the seller's documentation or website** to understand what input format they expect for best results.
 
-### Using x402 as an Agent Tool
+### Using x402 as an Agent Tool (Buyer Flow)
 
-In **Super Intelligence**, you can add x402 sellers as tools for your Predict Agents:
+In **Super Intelligence**, your Predict Agents act as **buyers** that can pay for premium information from x402 sellers:
 
 1. **Open Agent Configuration** — Click on a Predict Agent to expand its settings
 2. **Select x402 Tool** — Click the "PayAI" tool option
 3. **Browse Bazaar** — A modal opens showing available sellers with their prices
-4. **Select a Seller** — Click on a seller to add it as the agent's tool
+4. **Select a Seller** — Click on a seller to add it as the agent's tool (or use Custom Endpoint for direct URLs like Arb Agent)
 5. **Configure Query** — Your agent's command will be sent as the query to the seller
-6. **Run Analysis** — The agent will call the x402 seller and include the response in its analysis
+6. **Run Analysis** — The agent automatically pays the seller and incorporates the response into its analysis
+
+Your agent handles the entire payment flow automatically — discovering the price, signing the payment authorization, and retrying with the payment header.
 
 ### Payment Flow
 
@@ -115,23 +156,29 @@ Add these to your `supabase/.env.local` file:
 # x402 / PayAI CONFIGURATION
 # =========================================================================================
 
-# x402 Bazaar Discovery URL - for browsing available sellers
-X402_DISCOVERY_URL=https://bazaar.payai.network/resources
-
 # Solana Private Key (base58 encoded) - for payments on Solana mainnet
 # Generate with: solana-keygen new --no-passphrase
 X402_SOLANA_PRIVATE_KEY=your_solana_private_key_base58
 
 # EVM Private Key - for payments on Base mainnet
 # Your Ethereum wallet private key (with 0x prefix)
-X402_EVM_PRIVATE_KEY=0x...your_evm_private_key
+X402_EVM_PRIVATE_KEY=0x_your_evm_private_key
+
+# Discovery URL - endpoint to list available sellers in the bazaar
+# PayAI:    https://facilitator.payai.network/discovery/resources
+# CDP:      https://api.cdp.coinbase.com/platform/v2/x402/discovery/resources
+X402_DISCOVERY_URL=https://facilitator.payai.network/discovery/resources
+
+# Facilitator URL - used for payment verification
+# PayAI:    https://facilitator.payai.network/
+# CDP:      https://api.cdp.coinbase.com/platform/v2/x402
+X402_FACILITATOR_URL=https://facilitator.payai.network/
 
 # Optional: Solana RPC URL (defaults to mainnet-beta)
 SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
-
-# Optional: Facilitator URL for payment verification
-X402_FACILITATOR_URL=https://facilitator.payai.network
 ```
+
+> 💡 **Tip:** Switch between PayAI and CDP facilitators by updating `X402_DISCOVERY_URL` and `X402_FACILITATOR_URL`. Both work with the same wallet keys.
 
 ### Network Configuration
 
@@ -322,7 +369,16 @@ Once selected, the x402 seller appears as a tool badge on your Predict Agent:
 
 ## Example Use Cases
 
-### 1. Premium News Analysis
+### 1. Arbitrage Discovery with Arb Agent
+Use the PredictOS Arb Agent to find arbitrage opportunities:
+```
+Seller: PredictOS Arb Agent
+Endpoint: https://nqyocjuqubsdrguazcjz.supabase.co/functions/v1/get-polymarket-kalshi-arbitrage
+Cost: $1.00 per call
+Returns: Live Polymarket vs Kalshi arbitrage opportunities
+```
+
+### 2. Premium News Analysis
 Use a paid news aggregator to get real-time market sentiment:
 ```
 Seller: biznews.x402.bot
@@ -330,7 +386,7 @@ Query: "Latest news about Polymarket and prediction markets"
 Cost: $0.01 per call
 ```
 
-### 2. Alternative Data Sources
+### 3. Alternative Data Sources
 Access specialized data providers not available through free APIs:
 ```
 Seller: market-data.x402.bot  
@@ -338,7 +394,7 @@ Query: {"symbol": "BTC", "timeframe": "1h"}
 Cost: $0.05 per call
 ```
 
-### 3. AI-to-AI Consultation
+### 4. AI-to-AI Consultation
 Let your agent consult another AI for a second opinion:
 ```
 Seller: ai-analyst.x402.bot
@@ -392,10 +448,13 @@ Cost: $0.10 per call
 
 ## Links
 
+- [x402 Protocol Specification](https://www.x402.org/)
+- [x402.watch](https://x402.watch/) — Discover x402 sellers
 - [PayAI Website](https://www.payai.network/)
 - [PayAI Documentation](https://docs.payai.network/)
-- [x402 Protocol Specification](https://www.x402.org/)
 - [PayAI Bazaar](https://bazaar.payai.network/)
+- [Coinbase CDP x402](https://docs.cdp.coinbase.com/x402/docs/welcome) — CDP Facilitator documentation
+- [PredictOS Arb Agent on x402.watch](https://x402.watch/seller/predictos-live-polymarket-vs-kalshi-arbitrage)
 
 ---
 
