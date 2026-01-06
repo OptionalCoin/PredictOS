@@ -122,11 +122,15 @@ const ArbitrageTerminal = () => {
       <div className="grid grid-cols-2 gap-3 mb-3">
         <div className="bg-success/10 rounded p-2 text-center">
           <span className="text-xs text-muted-foreground block">YES</span>
-          <span className="text-lg font-bold text-success">{market.yesPrice.toFixed(1)}%</span>
+          <span className="text-lg font-bold text-success">
+            {market.yesPrice != null ? `${market.yesPrice.toFixed(1)}%` : 'N/A'}
+          </span>
         </div>
         <div className="bg-danger/10 rounded p-2 text-center">
           <span className="text-xs text-muted-foreground block">NO</span>
-          <span className="text-lg font-bold text-danger">{market.noPrice.toFixed(1)}%</span>
+          <span className="text-lg font-bold text-danger">
+            {market.noPrice != null ? `${market.noPrice.toFixed(1)}%` : 'N/A'}
+          </span>
         </div>
       </div>
 
